@@ -5,7 +5,7 @@
 #include <windows.h>
 
 static safetyhook::InlineHook g_hook;
-static char g_address_buffer[128] = "0x0";
+static char g_address_buffer[128] = "0x4F8D90"; // TODO: temp default addr for testing, remove later
 
 void hooked_function_callback()
 {
