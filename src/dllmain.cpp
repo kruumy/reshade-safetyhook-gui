@@ -1,18 +1,25 @@
-#include "windows.h"
+#include <imgui.h>
+#include <reshade.hpp>
 
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-                     )
+static void draw_window(reshade::api::effect_runtime* runtime)
 {
-    switch (ul_reason_for_call)
+    ImGui::TextUnformatted("Some text");
+}
+
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
+{
+    switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH:
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
+        if (!reshade::register_addon(hinstDLL))
+        {
+            return FALSE;
+        }
+        reshade::register_overlay("safetyhook-gui", &draw_window);
+        break;
     case DLL_PROCESS_DETACH:
+        reshade::unregister_addon(hinstDLL);
         break;
     }
     return TRUE;
 }
-
