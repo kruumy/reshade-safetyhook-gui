@@ -1,5 +1,6 @@
 #include <imgui.h>
 #include <reshade.hpp>
+#include <safetyhook.hpp>
 
 static void draw_window(reshade::api::effect_runtime* runtime)
 {
