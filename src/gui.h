@@ -6,11 +6,17 @@
 
 namespace gui
 {
-    
+    void draw_inlinehook_section()
+    {
+        ImGui::PushID("inlinehook");
 
-    void draw_hook(midhook_definition& hook, size_t index)
+        ImGui::PopID();
+    }
+
+    void draw_midhook(midhook_definition& hook, size_t index)
     {
         ImGui::PushID(&hook);
+
         if (ImGui::Button("X"))
         {
             hook.disable();
@@ -39,24 +45,27 @@ namespace gui
             }
         }
 
-        ImGui::Separator();
         ImGui::PopID();
     }
 
-    void draw(reshade::api::effect_runtime* runtime)
+    void draw_midhook_section()
     {
+        ImGui::PushID("midhook");
+
+        ImGui::TextWrapped("Mid hooks are a very flexible kind of hook that provides access to the CPU context at the point in which the hook was hit. This gives direct register access to nearly any point within a functions execution path.");
+
         static char add_address_buffer[32] = "";
         ImGui::InputText("Hex Address", add_address_buffer, sizeof(add_address_buffer));
 
         ImGui::SameLine();
-        if (ImGui::Button("Add Hook"))
+        if (ImGui::Button("+"))
         {
             unsigned long long addr = 0;
-            try 
+            try
             {
                 addr = std::stoull(add_address_buffer, nullptr, 16);
             }
-            catch (...) { }
+            catch (...) {}
 
             if (addr != 0)
             {
@@ -72,7 +81,30 @@ namespace gui
 
         for (size_t i = 0; i < hook_manager::hooks.size(); ++i)
         {
-            draw_hook(*hook_manager::hooks[i], i);
+            draw_midhook(*hook_manager::hooks[i], i);
+            ImGui::Separator();
         }
+
+        ImGui::PopID();
+    }
+
+    void draw(reshade::api::effect_runtime* runtime)
+    {
+        ImGui::PushID("reshade-safetyhook-gui");
+
+        if (ImGui::CollapsingHeader("Mid Hooks", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            draw_midhook_section();
+        }
+        
+        ImGui::Separator();
+
+        if (ImGui::CollapsingHeader("Inline Hooks", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            draw_inlinehook_section();
+        }
+        
+
+        ImGui::PopID();
     }
 }
