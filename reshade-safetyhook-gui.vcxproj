@@ -176,6 +176,11 @@
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\gui.h" />
+    <ClInclude Include="src\hook_manager.h" />
+    <ClInclude Include="src\midhook_definition.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
