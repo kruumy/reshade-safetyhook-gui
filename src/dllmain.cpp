@@ -15,7 +15,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
         {
             return FALSE;
         }
-        reshade::register_overlay("SafetyHook GUI", &gui::draw);
+        reshade::register_overlay(nullptr, &gui::draw);
         break;
     case DLL_PROCESS_DETACH:
         reshade::unregister_addon(hinstDLL);
