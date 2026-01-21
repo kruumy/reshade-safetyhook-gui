@@ -29,5 +29,8 @@
     <ClInclude Include="src\gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\private_member_stealer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

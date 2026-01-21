@@ -4,6 +4,7 @@
 #include <string>
 #include <format>
 #include <unordered_map>
+#include "private_member_stealer.h"
 
 #if SAFETYHOOK_ARCH_X86_64
 #define IP_REG rip
@@ -11,23 +12,12 @@
 #define IP_REG eip
 #endif
 
-// Tag for m_hook (InlineHook)
 struct MidHookInlineTag
 {
     typedef safetyhook::InlineHook safetyhook::MidHook::* type;
 };
 
-// Template to steal private members
-template <typename Tag, typename Tag::type M>
-struct PrivateMemberStealer
-{
-    friend typename Tag::type get_member(Tag)
-    {
-        return M;
-    }
-};
-
-template struct PrivateMemberStealer<MidHookInlineTag, &safetyhook::MidHook::m_hook>;
+template struct private_member_stealer<MidHookInlineTag, &safetyhook::MidHook::m_hook>;
 safetyhook::InlineHook safetyhook::MidHook::* get_member(MidHookInlineTag);
 
 
