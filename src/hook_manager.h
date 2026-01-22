@@ -5,5 +5,5 @@
 
 namespace hook_manager
 {
-    inline std::vector<std::unique_ptr<midhook_definition>> hooks;
+	inline std::vector<std::unique_ptr<midhook_definition>> hooks;
 }
