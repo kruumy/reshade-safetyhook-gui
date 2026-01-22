@@ -36,9 +36,7 @@ namespace gui
 
 		ImGui::SameLine();
 
-		char address_text[32];
-		sprintf_s(address_text, "0x%p", hook.hook.target());
-		ImGui::Text("%s", address_text);
+		ImGui::Text("0x%p", hook.hook.target());
 
 		ImGui::SameLine();
 
@@ -53,6 +51,29 @@ namespace gui
 			{
 				hook.hook.disable();
 			}
+		}
+
+		ImGui::SameLine();
+		if (ImGui::Button(hook.show_history ? "Close History" : "Open History"))
+		{
+			hook.show_history = !hook.show_history;
+		}
+
+		if (hook.show_history)
+		{
+			if (ImGui::Begin(std::format("0x{:X} History", (uintptr_t)hook.hook.target()).c_str(), &hook.show_history))
+			{
+				ImGui::BeginChild("HistoryScrollRegion");
+				for (auto& item : hook.get_context_history())
+				{
+					ImGui::Text("eax: 0x%X", item.eax);
+					ImGui::Text("ebp: 0x%X", item.ebp);
+					ImGui::Text("ecx: 0x%X", item.ecx);
+					ImGui::Separator();
+				}
+				ImGui::EndChild();
+			}
+			ImGui::End();
 		}
 
 		ImGui::PopID();

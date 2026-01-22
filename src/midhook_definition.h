@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include "private_member_stealer.h"
 #include <chrono>
+#include <stack>
 
 #if SAFETYHOOK_ARCH_X86_64
 #define IP_REG rip
@@ -27,6 +28,8 @@ class midhook_definition
 public:
 	std::chrono::steady_clock::time_point last_hit_time{};
 	SafetyHookMid hook;
+	const int MAX_CONTEXT_HISTORY_AMOUNT = 10;
+	bool show_history = false;
 
 	midhook_definition(void* target_addr)
 	{
@@ -57,12 +60,25 @@ public:
 
 		reshade::log::message(reshade::log::level::debug, std::format("Removed midhook at: 0x{:X}", this->hook.target_address()).c_str());
 	}
+
+	inline const std::deque<SafetyHookContext>& get_context_history()
+	{
+		return context_history;
+	}
+
 private:
 	inline static std::unordered_map<uintptr_t, midhook_definition*> instance_registry;
+	std::deque<SafetyHookContext> context_history;
 
 	void destination(SafetyHookContext& ctx)
 	{
 		last_hit_time = std::chrono::steady_clock::now();
+
+		context_history.push_back(ctx);
+		if (context_history.size() > MAX_CONTEXT_HISTORY_AMOUNT)
+		{
+			context_history.pop_front();
+		}
 
 		reshade::log::message(reshade::log::level::debug, std::format("midhook destination called: 0x{:X}", this->hook.target_address()).c_str());
 	}
