@@ -5,6 +5,7 @@
 #include <format>
 #include <unordered_map>
 #include "private_member_stealer.h"
+#include <chrono>
 
 #if SAFETYHOOK_ARCH_X86_64
 #define IP_REG rip
@@ -26,11 +27,11 @@ class midhook_definition
 public:
     void* target = nullptr;
     bool is_enabled = false;
+    std::chrono::steady_clock::time_point last_hit_time{};
 
     void destination(SafetyHookContext& ctx)
     {
-        std::string log_msg = std::format("Midhook triggered for object at target: 0x{:X}", reinterpret_cast<uintptr_t>(target));
-        reshade::log::message(reshade::log::level::info, log_msg.c_str());
+        last_hit_time = std::chrono::steady_clock::now();
     }
 
     void enable()

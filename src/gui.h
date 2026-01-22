@@ -17,6 +17,16 @@ namespace gui
     {
         ImGui::PushID(&hook);
 
+        auto ms_since_hit = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hook.last_hit_time).count();
+        if (ms_since_hit < 1000)
+        {
+            float intensity = 1.0f - (static_cast<float>(ms_since_hit) / 1000.0f);
+            ImU32 fade_color = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, intensity * 0.3f));
+            ImVec2 p_min = ImGui::GetCursorScreenPos();
+            ImVec2 p_max = ImVec2(p_min.x + ImGui::GetContentRegionAvail().x, p_min.y + ImGui::GetFrameHeightWithSpacing());
+            ImGui::GetWindowDrawList()->AddRectFilled(p_min, p_max, fade_color);
+        }
+
         if (ImGui::Button("X"))
         {
             hook.disable();
@@ -52,7 +62,9 @@ namespace gui
     {
         ImGui::PushID("midhook");
 
+        ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
         ImGui::TextWrapped("Mid hooks are a very flexible kind of hook that provides access to the CPU context at the point in which the hook was hit. This gives direct register access to nearly any point within a functions execution path.");
+        ImGui::PopStyleColor();
 
         static char add_address_buffer[32] = "";
         ImGui::InputText("Hex Address", add_address_buffer, sizeof(add_address_buffer));
