@@ -25,50 +25,47 @@ safetyhook::InlineHook safetyhook::MidHook::* get_member(MidHookInlineTag);
 class midhook_definition
 {
 public:
-    void* target = nullptr;
-    bool is_enabled = false;
     std::chrono::steady_clock::time_point last_hit_time{};
+    SafetyHookMid hook;
 
-    void destination(SafetyHookContext& ctx)
+    midhook_definition(void* target_addr)
     {
-        last_hit_time = std::chrono::steady_clock::now();
-    }
-
-    void enable()
-    {
-        if (target == nullptr) return;
-
-        auto result = safetyhook::MidHook::create(target, &trampoline);
+        auto result = safetyhook::MidHook::create(target_addr, &trampoline, safetyhook::MidHook::Flags::StartDisabled);
+       
         if (result)
         {
             hook = std::move(*result);
             auto& m_hook = hook.*get_member(MidHookInlineTag{});
 
             instance_registry[m_hook.trampoline().address()] = this;
-
-            is_enabled = true;
         }
-    }
-
-    void disable()
-    {
-        if (is_enabled)
+        else
         {
-            auto& m_hook = hook.*get_member(MidHookInlineTag{});
-            uintptr_t tramp_addr = m_hook.trampoline().address();
-
-            instance_registry.erase(tramp_addr);
-            hook = {};
-            is_enabled = false;
+            reshade::log::message(reshade::log::level::error, std::format("Failed to create midhook at 0x{:X}", reinterpret_cast<uintptr_t>(hook.target())).c_str());
         }
+
+        reshade::log::message(reshade::log::level::debug, std::format("Created midhook at: 0x{:X}", this->hook.target_address()).c_str());
     }
 
-    
+    ~midhook_definition()
+    {
+        auto& m_hook = hook.*get_member(MidHookInlineTag{});
+        uintptr_t tramp_addr = m_hook.trampoline().address();
 
+        instance_registry.erase(tramp_addr);
+        hook = {};
+
+        reshade::log::message(reshade::log::level::debug, std::format("Removed midhook at: 0x{:X}", this->hook.target_address()).c_str());
+    }
 private:
-    SafetyHookMid hook;
-
     inline static std::unordered_map<uintptr_t, midhook_definition*> instance_registry;
+
+    void destination(SafetyHookContext& ctx)
+    {
+        last_hit_time = std::chrono::steady_clock::now();
+
+        reshade::log::message(reshade::log::level::debug, std::format("midhook destination called: 0x{:X}", this->hook.target_address()).c_str());
+    }
 
     static void trampoline(SafetyHookContext& ctx)
     {
@@ -79,7 +76,6 @@ private:
             return;
         }
 
-        std::string ip_msg = std::format("Could not find IP in registry: 0x{:X}", static_cast<uintptr_t>(ctx.IP_REG));
-        reshade::log::message(reshade::log::level::error, ip_msg.c_str());
+        reshade::log::message(reshade::log::level::error, std::format("Could not find IP in registry: 0x{:X}", static_cast<uintptr_t>(ctx.IP_REG)).c_str());
     }
 };

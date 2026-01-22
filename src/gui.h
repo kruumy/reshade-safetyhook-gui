@@ -29,7 +29,6 @@ namespace gui
 
         if (ImGui::Button("X"))
         {
-            hook.disable();
             hook_manager::hooks.erase(hook_manager::hooks.begin() + index);
             ImGui::PopID();
             return;
@@ -38,20 +37,21 @@ namespace gui
         ImGui::SameLine();
 
         char address_text[32];
-        sprintf_s(address_text, "0x%p", hook.target);
+        sprintf_s(address_text, "0x%p", hook.hook.target());
         ImGui::Text("%s", address_text);
 
         ImGui::SameLine();
 
-        if (ImGui::Checkbox("Enabled", &hook.is_enabled))
+        bool is_enabled = hook.hook.enabled();
+        if (ImGui::Checkbox("Enabled", &is_enabled))
         {
-            if (hook.is_enabled)
+            if (is_enabled)
             {
-                hook.enable();
+                hook.hook.enable();
             }
             else
             {
-                hook.disable();
+                hook.hook.disable();
             }
         }
 
@@ -81,11 +81,7 @@ namespace gui
 
             if (addr != 0)
             {
-                auto new_hook = std::make_unique<midhook_definition>();
-                new_hook->target = reinterpret_cast<void*>(addr);
-                new_hook->is_enabled = false;
-
-                hook_manager::hooks.push_back(std::move(new_hook));
+                hook_manager::hooks.push_back(std::make_unique<midhook_definition>(reinterpret_cast<void*>(addr)));
 
                 memset(add_address_buffer, 0, sizeof(add_address_buffer));
             }
