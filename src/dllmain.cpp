@@ -1,7 +1,5 @@
 #include <imgui.h>
 #include <reshade.hpp>
-#include <safetyhook.hpp>
-#include <string>
 #include <windows.h>
 #include "gui.h"
 

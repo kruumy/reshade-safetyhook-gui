@@ -32,5 +32,8 @@
     <ClInclude Include="src\private_member_stealer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\inlinehook_definition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
