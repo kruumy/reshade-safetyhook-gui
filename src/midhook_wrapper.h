@@ -9,7 +9,7 @@ public:
     SafetyHookMid hook;
 
     std::chrono::steady_clock::time_point last_hit_time{};
-    const size_t MAX_LOG_SIZE = 100 * 1024;
+    static constexpr size_t MAX_LOG_SIZE = 100 * 1024;
     bool show_log_window = false;
 
     explicit midhook_wrapper(void* target);
