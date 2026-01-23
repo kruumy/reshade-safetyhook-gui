@@ -170,8 +170,8 @@ namespace gui
 
 		for (size_t i = 0; i < hook_manager::midhooks.size(); ++i)
 		{
-			draw_midhook(*hook_manager::midhooks[i], i);
 			ImGui::Separator();
+			draw_midhook(*hook_manager::midhooks[i], i);
 		}
 
 		ImGui::PopID();
@@ -185,8 +185,6 @@ namespace gui
 		{
 			draw_midhook_section();
 		}
-
-		ImGui::Separator();
 
 		if (ImGui::CollapsingHeader("Inline Hooks", ImGuiTreeNodeFlags_DefaultOpen))
 		{
