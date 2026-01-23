@@ -20,7 +20,6 @@ public:
     bool show_log_window = false;
     std::chrono::steady_clock::time_point last_hit_time{};
     SafetyHookMid hook;
-    
 
     explicit midhook_definition(void* target)
     {
@@ -63,6 +62,7 @@ public:
 private:
     inline static std::unordered_map<uintptr_t, midhook_definition*> registry;
     std::stringstream log;
+    const int MAX_LOG_ENTRIES = 100000;
 
     static void print_context(std::ostream& os, const SafetyHookContext& ctx, uintptr_t target_addr)
     {
@@ -95,6 +95,12 @@ private:
         last_hit_time = std::chrono::steady_clock::now();
 
         print_context(log,ctx, hook.target_address());
+
+        if (log.tellp() > MAX_LOG_ENTRIES)
+        {
+            this->clear_log();
+            log << "[Log cleared to prevent overflow]\n";
+        }
     }
 
     static void trampoline(SafetyHookContext& ctx)
