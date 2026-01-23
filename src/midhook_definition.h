@@ -62,7 +62,7 @@ public:
 private:
     inline static std::unordered_map<uintptr_t, midhook_definition*> registry;
     std::stringstream log;
-    const int MAX_LOG_ENTRIES = 100000;
+    const size_t MAX_LOG_SIZE = 100 * 1024;
 
     static void print_context(std::ostream& os, const SafetyHookContext& ctx, uintptr_t target_addr)
     {
@@ -96,7 +96,7 @@ private:
 
         print_context(log,ctx, hook.target_address());
 
-        if (log.tellp() > MAX_LOG_ENTRIES)
+        if (log.tellp() > MAX_LOG_SIZE)
         {
             this->clear_log();
             log << "[Log cleared to prevent overflow]\n";
