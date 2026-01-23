@@ -81,6 +81,9 @@ namespace gui
 			draw_midhook_log(hook);
 		}
 
+		ImGui::SameLine();
+		ImGui::Text("Hits: %d", hook.hit_amount);
+
         ImGui::PopID();
     }
 

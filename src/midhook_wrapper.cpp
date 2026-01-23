@@ -44,6 +44,7 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     }
 
     last_hit_time = std::chrono::steady_clock::now();
+    hit_amount++;
 
     log << "-------------------------------" << "\n";
     log << "CPU Context at: 0x" << std::hex << std::uppercase << hook.target_address() << "\n";
