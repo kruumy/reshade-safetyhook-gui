@@ -71,6 +71,8 @@ namespace gui
 			{
 				hook.clear_log();
 			}
+			ImGui::SameLine();
+			ImGui::Text("%.2f KB", static_cast<double>(hook.get_log().size()) / 1024.0);
 
 			ImGui::Separator();
 
