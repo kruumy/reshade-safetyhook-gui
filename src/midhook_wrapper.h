@@ -23,7 +23,7 @@ public:
 
 private:
 
-    inline static std::unordered_map<uintptr_t, midhook_wrapper*> registry;
+    inline static std::unordered_map<uintptr_t, midhook_wrapper*> registry; // trampoline_address, this*
     std::stringstream log;
 
     void destination(SafetyHookContext& ctx);
