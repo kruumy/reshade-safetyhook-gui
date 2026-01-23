@@ -41,9 +41,7 @@ public:
 
     ~midhook_definition()
     {
-        uintptr_t tramp_ip = midhook_extensions::get_trampoline(hook).address();
-
-        registry.erase(tramp_ip);
+        registry.erase(midhook_extensions::get_trampoline(hook).address());
 
         hook = {};
     }
@@ -94,12 +92,12 @@ private:
     {
         last_hit_time = std::chrono::steady_clock::now();
 
-        print_context(log,ctx, hook.target_address());
+        print_context(log, ctx, hook.target_address());
 
         if (log.tellp() > MAX_LOG_SIZE)
         {
             this->clear_log();
-            log << "[Log cleared to prevent overflow]\n";
+            log << "[Log cleared to prevent overflow]\n\n";
         }
     }
 
