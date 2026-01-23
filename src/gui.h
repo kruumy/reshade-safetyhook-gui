@@ -62,76 +62,81 @@ namespace gui
 		ImGui::PopID();
 	}
 
-	void draw_midhook_history(midhook_definition& hook)
+	inline void draw_midhook_log(midhook_definition& hook)
 	{
-		if (ImGui::Begin(std::format("0x{:X} History", (uintptr_t)hook.hook.target()).c_str(), &hook.show_history))
+		ImGui::SetNextWindowSize(ImVec2(560, 460), ImGuiCond_FirstUseEver);
+		if (ImGui::Begin(std::format("0x{:X} History", (uintptr_t)hook.hook.target_address()).c_str(), &hook.show_log_window))
 		{
-			ImGui::BeginChild("HistoryScrollRegion");
-			for (auto& item : hook.get_context_history())
+			if (ImGui::Button("Clear Log"))
 			{
-				ImGui::Text("eax: 0x%X", item.eax);
-				ImGui::Text("ebp: 0x%X", item.ebp);
-				ImGui::Text("ecx: 0x%X", item.ecx);
-				ImGui::Separator();
+				hook.clear_log();
 			}
-			ImGui::EndChild();
+
+			ImGui::Separator();
+
+			if (ImGui::BeginChild("HistoryScroll", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar))
+			{
+				auto log_view = hook.get_log();
+				ImGui::TextUnformatted(log_view.data(), log_view.data() + log_view.size());
+
+				if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+				{
+					ImGui::SetScrollHereY(1.0f);
+				}
+				ImGui::EndChild();
+			}
 		}
+
 		ImGui::End();
 	}
 
-	void draw_midhook(midhook_definition& hook, size_t index)
-	{
-		ImGui::PushID(&hook);
+    inline void draw_midhook(midhook_definition& hook, size_t index)
+    {
+        ImGui::PushID(&hook);
 
-		auto ms_since_hit = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hook.last_hit_time).count();
-		if (ms_since_hit < 1000)
+        auto ms_since_hit =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - hook.last_hit_time).count();
+
+        if (ms_since_hit < 1000)
+        {
+            float t = 1.0f - (float(ms_since_hit) / 1000.0f);
+
+            ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, t * 0.3f));
+            ImVec2 p0 = ImGui::GetCursorScreenPos();
+            ImVec2 p1 =
+            {
+                p0.x + ImGui::GetContentRegionAvail().x,
+                p0.y + ImGui::GetFrameHeightWithSpacing()
+            };
+
+            ImGui::GetWindowDrawList()->AddRectFilled(p0, p1, col);
+        }
+
+        ImGui::Text("0x%p", hook.hook.target());
+
+        ImGui::SameLine();
+
+        bool enabled = hook.hook.enabled();
+        if (ImGui::Checkbox("Enabled", &enabled))
+        {
+            enabled ? hook.hook.enable() : hook.hook.disable();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button( hook.show_log_window ? "Close History" : "Open History" ))
+        {
+            hook.show_log_window = !hook.show_log_window;
+        }
+
+		if (hook.show_log_window)
 		{
-			float intensity = 1.0f - (static_cast<float>(ms_since_hit) / 1000.0f);
-			ImU32 fade_color = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, intensity * 0.3f));
-			ImVec2 p_min = ImGui::GetCursorScreenPos();
-			ImVec2 p_max = ImVec2(p_min.x + ImGui::GetContentRegionAvail().x, p_min.y + ImGui::GetFrameHeightWithSpacing());
-			ImGui::GetWindowDrawList()->AddRectFilled(p_min, p_max, fade_color);
+			draw_midhook_log(hook);
 		}
 
-		if (ImGui::Button("X"))
-		{
-			hook_manager::midhooks.erase(hook_manager::midhooks.begin() + index);
-			ImGui::PopID();
-			return;
-		}
-
-		ImGui::SameLine();
-
-		ImGui::Text("0x%p", hook.hook.target());
-
-		ImGui::SameLine();
-
-		bool is_enabled = hook.hook.enabled();
-		if (ImGui::Checkbox("Enabled", &is_enabled))
-		{
-			if (is_enabled)
-			{
-				hook.hook.enable();
-			}
-			else
-			{
-				hook.hook.disable();
-			}
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Button(hook.show_history ? "Close History" : "Open History"))
-		{
-			hook.show_history = !hook.show_history;
-		}
-
-		if (hook.show_history)
-		{
-			draw_midhook_history(hook);
-		}
-
-		ImGui::PopID();
-	}
+        ImGui::PopID();
+    }
 
 	void draw_midhook_section()
 	{
