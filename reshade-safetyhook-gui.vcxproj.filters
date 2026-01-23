@@ -18,21 +18,21 @@
     <ClCompile Include="src\dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\midhook_wrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\hook_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\midhook_definition.h">
+    <ClInclude Include="src\midhook_wrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\inlinehook_definition.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\midhook_extensions.h">
+    <ClInclude Include="src\safetyhook\ContextEx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

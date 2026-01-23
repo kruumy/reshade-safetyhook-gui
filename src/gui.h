@@ -7,62 +7,7 @@
 
 namespace gui
 {
-	void draw_inlinehook(inlinehook_definition& hook, size_t index)
-	{
-
-	}
-
-	void draw_inlinehook_section()
-	{
-		ImGui::PushID("inlinehook");
-
-		ImGui::PushItemWidth(100);
-		static int calling_coventions_selected_index = 0;
-		const char* calling_coventions[] = { "__cdecl", "__stdcall", "__fastcall"};
-		ImGui::Combo("##", &calling_coventions_selected_index, calling_coventions, IM_ARRAYSIZE(calling_coventions));
-		ImGui::PopItemWidth();
-
-		ImGui::SameLine();
-		static char function_addr_str[32] = "";
-		ImGui::InputText("Hex Address", function_addr_str, IM_ARRAYSIZE(function_addr_str));
-
-		ImGui::SameLine();
-		ImGui::Text("(");
-
-		static size_t amount_of_parameters = 0;
-		for (size_t i = 0; i < amount_of_parameters; i++)
-		{
-			//ImGui::SameLine();
-
-			//static char str13[32] = ""; // TODO
-			//ImGui::InputText("##", str13, IM_ARRAYSIZE(str13));
-
-			if (i < amount_of_parameters - 1)
-			{
-				ImGui::SameLine();
-				ImGui::Text(",");
-			}
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Button("+"))
-		{
-			amount_of_parameters++;
-		}
-
-		ImGui::SameLine();
-		ImGui::Text(")");
-
-		for (size_t i = 0; i < hook_manager::inlinehooks.size(); ++i)
-		{
-			draw_inlinehook(*hook_manager::inlinehooks[i], i);
-			ImGui::Separator();
-		}
-
-		ImGui::PopID();
-	}
-
-	inline void draw_midhook_log(midhook_definition& hook)
+	inline void draw_midhook_log(midhook_wrapper& hook)
 	{
 		ImGui::SetNextWindowSize(ImVec2(560, 460), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin(std::format("0x{:X} History", (uintptr_t)hook.hook.target_address()).c_str(), &hook.show_log_window))
@@ -91,7 +36,7 @@ namespace gui
 		ImGui::End();
 	}
 
-    inline void draw_midhook(midhook_definition& hook, size_t index)
+    inline void draw_midhook(midhook_wrapper& hook, size_t index)
     {
         ImGui::PushID(&hook);
 
@@ -162,7 +107,7 @@ namespace gui
 
 			if (addr != 0)
 			{
-				hook_manager::midhooks.push_back(std::make_unique<midhook_definition>(reinterpret_cast<void*>(addr)));
+				hook_manager::midhooks.push_back(std::make_unique<midhook_wrapper>(reinterpret_cast<void*>(addr)));
 
 				memset(add_address_buffer, 0, sizeof(add_address_buffer));
 			}
@@ -185,12 +130,6 @@ namespace gui
 		{
 			draw_midhook_section();
 		}
-
-		if (ImGui::CollapsingHeader("Inline Hooks", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			draw_inlinehook_section();
-		}
-
 
 		ImGui::PopID();
 	}
