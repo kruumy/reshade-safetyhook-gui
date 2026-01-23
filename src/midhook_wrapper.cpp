@@ -37,18 +37,18 @@ inline const safetyhook::Allocation& midhook_wrapper::get_trampoline() const
 
 void midhook_wrapper::destination(SafetyHookContext& ctx)
 {
+    if (log.tellp() > MAX_LOG_SIZE)
+    {
+        this->clear_log();
+        log << "[Log cleared to prevent overflow]\n\n";
+    }
+
     last_hit_time = std::chrono::steady_clock::now();
 
     log << "-------------------------------" << "\n";
     log << "CPU Context at: 0x" << std::hex << std::uppercase << hook.target_address() << "\n";
     log << "-------------------------------" << "\n";
     log << reinterpret_cast<const safetyhook::ContextEx&>(ctx).to_string();
-
-    if (log.tellp() > MAX_LOG_SIZE)
-    {
-        this->clear_log();
-        log << "[Log cleared to prevent overflow]\n\n";
-    }
 }
 
 void midhook_wrapper::trampoline(SafetyHookContext& ctx)
