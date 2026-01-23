@@ -76,8 +76,7 @@ namespace gui
 
 			if (ImGui::BeginChild("HistoryScroll", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar))
 			{
-				auto log_view = hook.get_log();
-				ImGui::TextUnformatted(log_view.data(), log_view.data() + log_view.size());
+				ImGui::TextUnformatted(hook.get_log().data(), hook.get_log().data() + hook.get_log().size());
 
 				if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
 				{

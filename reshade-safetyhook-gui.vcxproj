@@ -181,7 +181,7 @@
     <ClInclude Include="src\hook_manager.h" />
     <ClInclude Include="src\inlinehook_definition.h" />
     <ClInclude Include="src\midhook_definition.h" />
-    <ClInclude Include="src\private_member_stealer.h" />
+    <ClInclude Include="src\midhook_extensions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

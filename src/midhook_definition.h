@@ -5,27 +5,13 @@
 #include <cstring>
 #include <windows.h>
 #include <safetyhook.hpp>
-#include "private_member_stealer.h"
-
+#include "midhook_extensions.h"
 
 #if SAFETYHOOK_ARCH_X86_64
 #define IP_REG rip
 #else
 #define IP_REG eip
 #endif
-
-struct MidHookInlineTag
-{
-    using type = safetyhook::InlineHook safetyhook::MidHook::*;
-};
-
-template struct private_member_stealer<
-    MidHookInlineTag,
-    &safetyhook::MidHook::m_hook>;
-
-inline safetyhook::InlineHook safetyhook::MidHook::*
-get_member(MidHookInlineTag);
-
 
 class midhook_definition
 {
@@ -51,14 +37,12 @@ public:
 
         hook = std::move(*result);
 
-        auto& inline_hook = hook.*get_member(MidHookInlineTag{});
-        registry[inline_hook.trampoline().address()] = this;
+        registry[midhook_extensions::get_trampoline(hook).address()] = this;
     }
 
     ~midhook_definition()
     {
-        auto& inline_hook = hook.*get_member(MidHookInlineTag{});
-        uintptr_t tramp_ip = inline_hook.trampoline().address();
+        uintptr_t tramp_ip = midhook_extensions::get_trampoline(hook).address();
 
         registry.erase(tramp_ip);
 
