@@ -59,6 +59,14 @@ namespace gui
             ImGui::GetWindowDrawList()->AddRectFilled(p0, p1, col);
         }
 
+		if (ImGui::Button("X"))
+		{
+			hook_manager::midhooks.erase(hook_manager::midhooks.begin() + index);
+			ImGui::PopID();
+			return;
+		}
+
+		ImGui::SameLine();
         ImGui::Text("0x%p", hook.hook.target());
 
         ImGui::SameLine();
