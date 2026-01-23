@@ -116,10 +116,12 @@ namespace gui
 			}
 			catch (...) {}
 
-			if (addr != 0)
+			if (addr != 0 && !std::any_of(hook_manager::midhooks.begin(), hook_manager::midhooks.end(), [addr](const auto& hook_ptr)
+				{
+					return hook_ptr->hook.target_address() == addr;
+				}))
 			{
 				hook_manager::midhooks.push_back(std::make_unique<midhook_wrapper>(reinterpret_cast<void*>(addr)));
-
 				memset(add_address_buffer, 0, sizeof(add_address_buffer));
 			}
 		}
