@@ -1,6 +1,6 @@
 #pragma once=
 #include "imgui.h"
-#include "entry.h"
+#include "entry/entry.h"
 
 namespace gui::midhook
 {

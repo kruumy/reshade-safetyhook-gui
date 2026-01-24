@@ -1,6 +1,6 @@
 #pragma once
 
-namespace gui::midhook::log
+namespace gui::midhook::entry::log
 {
 	inline void draw(midhook_wrapper& hook)
 	{

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace gui::midhook::live
+namespace gui::midhook::entry::live
 {
     void draw_register(const std::string& name, uintptr_t reg)
     {
