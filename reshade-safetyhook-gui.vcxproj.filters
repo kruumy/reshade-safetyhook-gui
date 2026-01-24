@@ -32,13 +32,22 @@
     <ClInclude Include="src\midhook_wrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\gui.h">
+    <ClInclude Include="src\gui\gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\safetyhook\ContextEx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\memory_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\midhook\midhook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\midhook\entry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\midhook\log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,7 +1,7 @@
 #include <imgui.h>
 #include <reshade.hpp>
 #include <windows.h>
-#include "gui.h"
+#include "gui/gui.h"
 
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)

@@ -180,7 +180,10 @@
     <ClCompile Include="src\safetyhook\ContextEx.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\gui.h" />
+    <ClInclude Include="src\gui\gui.h" />
+    <ClInclude Include="src\gui\midhook\entry.h" />
+    <ClInclude Include="src\gui\midhook\log.h" />
+    <ClInclude Include="src\gui\midhook\midhook.h" />
     <ClInclude Include="src\memory_utils.h" />
     <ClInclude Include="src\midhook_wrapper.h" />
     <ClInclude Include="src\safetyhook\ContextEx.h" />
