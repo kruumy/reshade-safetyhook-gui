@@ -1,5 +1,6 @@
 #include "midhook_wrapper.h"
 #include "safetyhook/ContextEx.h"
+#include "memory_utils.h"
 
 #if SAFETYHOOK_ARCH_X86_64
 #define IP_REG rip
@@ -27,6 +28,11 @@ inline const safetyhook::Allocation& midhook_wrapper::get_trampoline() const
 
 std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
 {
+    if (!memory_utils::is_executable_pointer(target))
+    {
+        return nullptr;
+    }
+
     if (std::any_of(midhooks.begin(), midhooks.end(), [target](const auto& hook_ptr)
         {
             return hook_ptr->hook.target_address() == reinterpret_cast<uintptr_t>(target);

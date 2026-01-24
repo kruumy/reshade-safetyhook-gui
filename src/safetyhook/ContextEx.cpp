@@ -1,5 +1,5 @@
 #include "ContextEx.h"
-
+#include "memory_utils.h"
 #include <cstdint>
 #include <cstring>
 #include <sstream>
@@ -10,114 +10,42 @@
 
 namespace safetyhook
 {
-
-    static constexpr size_t MAX_STRING_LEN = 64;
-    static constexpr uintptr_t LOW_PTR = 0x10000;
-
-    static bool looks_like_pointer(uintptr_t v)
-    {
-        if (!v)
-        {
-            return false;
-        }
-
-#if SAFETYHOOK_ARCH_X86_64
-        if (v < LOW_PTR || v > 0x00007FFFFFFFFFFF)
-        {
-            return false;
-        }
-#else
-        if (v < LOW_PTR)
-        {
-            return false;
-        }
-#endif
-        return true;
-    }
-
-    template <typename T>
-    static bool safe_read(uintptr_t addr, T& out)
-    {
-        __try
-        {
-            std::memcpy(&out, reinterpret_cast<const void*>(addr), sizeof(T));
-            return true;
-        }
-        __except (EXCEPTION_EXECUTE_HANDLER)
-        {
-            return false;
-        }
-    }
-
-    static bool safe_read_string(uintptr_t addr, std::string& out)
-    {
-        out.clear();
-
-        if (!looks_like_pointer(addr))
-        {
-            return false;
-        }
-
-        __try
-        {
-            const char* p = reinterpret_cast<const char*>(addr);
-
-            for (size_t i = 0; i < MAX_STRING_LEN; ++i)
-            {
-                char c = p[i];
-
-                if (c == '\0')
-                {
-                    break;
-                }
-
-                if (c == '\n') out += "\\n";
-                else if (c == '\r') out += "\\r";
-                else if (std::isprint(static_cast<unsigned char>(c))) out += c;
-                else return false;
-            }
-
-            return !out.empty();
-        }
-        __except (EXCEPTION_EXECUTE_HANDLER)
-        {
-            return false;
-        }
-    }
-
-
     static void analyze_pointer(std::ostringstream& ss, uintptr_t v)
     {
-        if (!looks_like_pointer(v))
+        if (!memory_utils::looks_like_pointer(v))
         {
             return;
         }
 
         ss << " -> ";
 
+        // Try reading as string
         std::string str;
-        if (safe_read_string(v, str))
+        if (memory_utils::safe_read_string(v, str, true))
         {
             ss << "cstr(\"" << str << "\")";
             return;
         }
 
+        // Try reading as float
         float f;
-        if (safe_read(v, f) && std::isfinite(f))
+        if (memory_utils::safe_read(v, f) && std::isfinite(f))
         {
             ss << "float(" << f << ")";
             return;
         }
 
+        // Try reading as double
         double d;
-        if (safe_read(v, d) && std::isfinite(d))
+        if (memory_utils::safe_read(v, d) && std::isfinite(d))
         {
             ss << "double(" << d << ")";
             return;
         }
 
+        // Try reading as pointer to another pointer
         uintptr_t pv;
-        if (safe_read(v, pv))
+        if (memory_utils::safe_read_pointer(v, pv))
         {
             ss << "*(" << "0x" << std::hex << v << ") = 0x" << pv;
             return;
@@ -159,9 +87,7 @@ namespace safetyhook
         {
             ss << x.f32[i];
             if (i != 3)
-            {
                 ss << ", ";
-            }
         }
         ss << "] ";
 
@@ -210,5 +136,4 @@ namespace safetyhook
 
         return ss.str();
     }
-
 }

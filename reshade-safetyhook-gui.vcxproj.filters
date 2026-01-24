@@ -24,6 +24,9 @@
     <ClCompile Include="src\safetyhook\ContextEx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\memory_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\midhook_wrapper.h">
@@ -33,6 +36,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\safetyhook\ContextEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\memory_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
