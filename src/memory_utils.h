@@ -53,5 +53,4 @@ namespace memory_utils
 
         return looks_like_pointer(out);
     }
-
 }

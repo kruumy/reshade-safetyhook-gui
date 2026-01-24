@@ -33,11 +33,11 @@ bool memory_utils::is_executable_pointer(const void* ptr)
 
 bool memory_utils::safe_read_string(uintptr_t addr, std::string& out, bool replace_line_endings)
 {
-    out.clear();
-    out.reserve(MAX_STRING_LEN);
-
     if (!looks_like_pointer(addr))
         return false;
+
+    out.clear();
+    out.reserve(MAX_STRING_LEN);
 
     __try
     {

@@ -8,11 +8,11 @@
 #define IP_REG eip
 #endif
 
-// Jargon to get the m_hook private member
-template<typename T, auto P> struct Stealer { friend auto get(T) { return P; } };
-struct MidHookTag { using type = safetyhook::InlineHook safetyhook::MidHook::*; };
-template struct Stealer<MidHookTag, &safetyhook::MidHook::m_hook>;
-auto get(MidHookTag);
+
+midhook_wrapper::midhook_wrapper(SafetyHookMid internal_hook) : hook(std::move(internal_hook))
+{
+    registry[get_trampoline().address()] = this;
+}
 
 midhook_wrapper::~midhook_wrapper()
 {
@@ -21,6 +21,11 @@ midhook_wrapper::~midhook_wrapper()
     hook = {};
 }
 
+// Jargon to get the m_hook private member
+template<typename T, auto P> struct Stealer { friend auto get(T) { return P; } };
+struct MidHookTag { using type = safetyhook::InlineHook safetyhook::MidHook::*; };
+template struct Stealer<MidHookTag, &safetyhook::MidHook::m_hook>;
+auto get(MidHookTag);
 inline const safetyhook::Allocation& midhook_wrapper::get_trampoline() const
 {
     return (this->hook.*get(MidHookTag{})).trampoline();
@@ -53,12 +58,6 @@ std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
 
     return object;
 }
-
-midhook_wrapper::midhook_wrapper(SafetyHookMid internal_hook) : hook(std::move(internal_hook))
-{
-    registry[get_trampoline().address()] = this;
-}
-
 
 void midhook_wrapper::destination(SafetyHookContext& ctx)
 {
