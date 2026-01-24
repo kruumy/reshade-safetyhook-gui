@@ -1,9 +1,9 @@
 #pragma once
 #include <imgui.h>
 #include <reshade.hpp>
-#include "hook_manager.h"
 #include <string>
 #include <vector>
+#include "midhook_wrapper.h"
 
 namespace gui
 {
@@ -61,7 +61,7 @@ namespace gui
 
 		if (ImGui::Button("X"))
 		{
-			hook_manager::midhooks.erase(hook_manager::midhooks.begin() + index);
+			midhook_wrapper::midhooks.erase(midhook_wrapper::midhooks.begin() + index);
 			ImGui::PopID();
 			return;
 		}
@@ -116,20 +116,21 @@ namespace gui
 			}
 			catch (...) {}
 
-			if (addr != 0 && !std::any_of(hook_manager::midhooks.begin(), hook_manager::midhooks.end(), [addr](const auto& hook_ptr)
-				{
-					return hook_ptr->hook.target_address() == addr;
-				}))
+			std::shared_ptr<midhook_wrapper> midhook = midhook_wrapper::create(reinterpret_cast<void*>(addr));
+			if (midhook)
 			{
-				hook_manager::midhooks.push_back(std::make_unique<midhook_wrapper>(reinterpret_cast<void*>(addr)));
 				memset(add_address_buffer, 0, sizeof(add_address_buffer));
+			}
+			else
+			{
+				reshade::log::message(reshade::log::level::error, "Failed to create midhook. This address may already be hooked or is invalid.");
 			}
 		}
 
-		for (size_t i = 0; i < hook_manager::midhooks.size(); ++i)
+		for (size_t i = 0; i < midhook_wrapper::midhooks.size(); ++i)
 		{
 			ImGui::Separator();
-			draw_midhook(*hook_manager::midhooks[i], i);
+			draw_midhook(*midhook_wrapper::midhooks[i], i);
 		}
 
 		ImGui::PopID();

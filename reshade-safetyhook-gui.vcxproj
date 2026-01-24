@@ -180,7 +180,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\gui.h" />
-    <ClInclude Include="src\hook_manager.h" />
     <ClInclude Include="src\midhook_wrapper.h" />
     <ClInclude Include="src\safetyhook\ContextEx.h" />
   </ItemGroup>
