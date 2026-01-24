@@ -62,6 +62,7 @@ std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
 void midhook_wrapper::destination(SafetyHookContext& ctx)
 {
     last_hit_time = std::chrono::steady_clock::now();
+    last_context = ctx;
     hit_amount++;
 
     if (show_log_window)

@@ -50,5 +50,8 @@
     <ClInclude Include="src\gui\midhook\log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\gui\midhook\live.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

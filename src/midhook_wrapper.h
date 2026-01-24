@@ -13,6 +13,8 @@ public:
     static constexpr size_t MAX_LOG_SIZE = 100 * 1024;
     size_t hit_amount = 0;
     bool show_log_window = false;
+    bool show_live_window = false;
+    SafetyHookContext last_context{};
 
     static std::shared_ptr<midhook_wrapper> create(void* target);
 

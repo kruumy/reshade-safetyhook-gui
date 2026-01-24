@@ -1,5 +1,6 @@
 #pragma once
 #include "log.h"
+#include "live.h"
 
 namespace gui::midhook::entry
 {
@@ -45,7 +46,6 @@ namespace gui::midhook::entry
         }
 
         ImGui::SameLine();
-
         if (ImGui::Button(hook.show_log_window ? "Close History" : "Open History"))
         {
             hook.show_log_window = !hook.show_log_window;
@@ -54,6 +54,17 @@ namespace gui::midhook::entry
         if (hook.show_log_window)
         {
             log::draw(hook);
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button(hook.show_live_window ? "Close Live View" : "Open Live View"))
+        {
+            hook.show_live_window = !hook.show_live_window;
+        }
+
+        if (hook.show_live_window)
+        {
+            live::draw(hook);
         }
 
         ImGui::SameLine();
