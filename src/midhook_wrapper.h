@@ -1,6 +1,7 @@
 #pragma once
 #include <chrono>
 #include <safetyhook.hpp>
+#include "safetyhook/ContextEx.h"
 
 class midhook_wrapper
 {
@@ -14,7 +15,7 @@ public:
     size_t hit_amount = 0;
     bool show_log_window = false;
     bool show_live_window = false;
-    SafetyHookContext last_context{};
+    safetyhook::ContextEx last_context{};
 
     static std::shared_ptr<midhook_wrapper> create(void* target);
 

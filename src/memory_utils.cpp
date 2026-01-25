@@ -5,6 +5,7 @@ namespace memory_utils
     pointer_analysis_report analyze_pointer(uintptr_t addr)
     {
         pointer_analysis_report result{};
+        result.pointer = addr;
         result.as_float = nullptr;
         result.as_double = nullptr;
         result.as_string.clear();

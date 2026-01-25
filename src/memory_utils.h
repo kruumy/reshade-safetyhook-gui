@@ -4,6 +4,7 @@
 #include <cstring>
 #include <string>
 #include <cctype>
+#include <sstream>
 
 namespace memory_utils
 {
@@ -53,10 +54,30 @@ namespace memory_utils
 
     struct pointer_analysis_report
     {
+        uintptr_t pointer;
         bool is_valid_ptr;
         float* as_float;
         double* as_double;
         std::string as_string;
+
+        std::string to_string() const
+        {
+            if (!is_valid_ptr)
+                return "";
+
+            std::stringstream ss;
+
+            ss << " -> 0x" << std::hex << *reinterpret_cast<int*>(pointer) << " | ";
+
+            if (as_float)
+                ss << "float(" << *as_float << ") ";
+            if (as_double)
+                ss << "double(" << *as_double << ") ";
+            if (!as_string.empty())
+                ss << "string(" << as_string << ") ";
+
+            return ss.str();
+        }
     };
 
     pointer_analysis_report analyze_pointer(uintptr_t addr);

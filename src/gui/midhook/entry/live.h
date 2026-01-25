@@ -1,8 +1,28 @@
 #pragma once
+#include "memory_utils.h"
 
 namespace gui::midhook::entry::live
 {
-    void draw_register(const std::string& name, uintptr_t reg)
+    void draw_analysis(const memory_utils::pointer_analysis_report& report)
+    {
+        if (!report.is_valid_ptr)
+        {
+            return;
+        }
+
+        ImGui::PushID("analysis");
+
+        std::stringstream ss;
+
+        ss << report.to_string();
+
+        ImGui::SameLine();
+        ImGui::Text("%s", ss.str().c_str());
+
+        ImGui::PopID();
+    }
+
+    void draw_register(const std::string& name, uintptr_t reg, const memory_utils::pointer_analysis_report* report)
     {
         ImGui::PushID(name.c_str());
 
@@ -13,8 +33,14 @@ namespace gui::midhook::entry::live
         ImGui::SetNextItemWidth(ImGui::CalcTextSize(hex_str.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f);
         ImGui::InputText("##", hex_str.data(), hex_str.capacity() + 1, ImGuiInputTextFlags_ReadOnly);
 
+        if (report)
+        {
+            draw_analysis(*report);
+        }
+
         ImGui::PopID();
     }
+
 	void draw(midhook_wrapper& hook)
 	{
         ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
@@ -41,15 +67,15 @@ namespace gui::midhook::entry::live
             draw_register("R15", ctx.r15);
             draw_register("RIP", ctx.rip);
 #else
-            draw_register("EAX", ctx.eax);
-            draw_register("EBX", ctx.ebx);
-            draw_register("ECX", ctx.ecx);
-            draw_register("EDX", ctx.edx);
-            draw_register("ESI", ctx.esi);
-            draw_register("EDI", ctx.edi);
-            draw_register("EBP", ctx.ebp);
-            draw_register("ESP", ctx.esp);
-            draw_register("EIP", ctx.eip);
+            draw_register("EAX", ctx.ctx.eax, &ctx.eax_report);
+            draw_register("EBX", ctx.ctx.ebx, &ctx.ebx_report);
+            draw_register("ECX", ctx.ctx.ecx, &ctx.ecx_report);
+            draw_register("EDX", ctx.ctx.edx, &ctx.edx_report);
+            draw_register("ESI", ctx.ctx.esi, &ctx.esi_report);
+            draw_register("EDI", ctx.ctx.edi, &ctx.edi_report);
+            draw_register("EBP", ctx.ctx.ebp, &ctx.ebp_report);
+            draw_register("ESP", ctx.ctx.esp, &ctx.esp_report);
+            draw_register("EIP", ctx.ctx.eip, nullptr);
 #endif
 		}
 		ImGui::End();
