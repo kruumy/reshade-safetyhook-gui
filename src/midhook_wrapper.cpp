@@ -62,22 +62,8 @@ std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
 void midhook_wrapper::destination(SafetyHookContext& ctx)
 {
     last_hit_time = std::chrono::steady_clock::now();
-    last_context = safetyhook::ContextEx(ctx, show_log_window || show_live_window);
+    last_context = safetyhook::ContextEx(ctx, show_live_window);
     hit_amount++;
-
-    if (show_log_window)
-    {
-        if (log.tellp() > MAX_LOG_SIZE)
-        {
-            this->clear_log();
-            log << "[Log cleared to prevent overflow]\n\n";
-        }
-
-        log << "-------------------------------" << "\n";
-        log << "CPU Context at: 0x" << std::hex << std::uppercase << hook.target_address() << "\n";
-        log << "-------------------------------" << "\n";
-        log << last_context.to_string();
-    }
 }
 
 void midhook_wrapper::trampoline(SafetyHookContext& ctx)

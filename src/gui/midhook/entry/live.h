@@ -14,7 +14,14 @@ namespace gui::midhook::entry::live
 
         std::stringstream ss;
 
-        ss << report.to_string();
+        ss << " -> 0x" << std::hex << *reinterpret_cast<int*>(report.pointer) << " | ";
+
+        if (report.as_float)
+            ss << "float(" << *report.as_float << ") ";
+        if (report.as_double)
+            ss << "double(" << *report.as_double << ") ";
+        if (!report.as_string.empty())
+            ss << "string(" << report.as_string << ") ";
 
         ImGui::SameLine();
         ImGui::Text("%s", ss.str().c_str());

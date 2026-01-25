@@ -1,5 +1,4 @@
 #pragma once
-#include "log.h"
 #include "live.h"
 
 namespace gui::midhook::entry
@@ -43,17 +42,6 @@ namespace gui::midhook::entry
         if (ImGui::Checkbox("Enabled", &enabled))
         {
             enabled ? hook.hook.enable() : hook.hook.disable();
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button(hook.show_log_window ? "Close History" : "Open History"))
-        {
-            hook.show_log_window = !hook.show_log_window;
-        }
-
-        if (hook.show_log_window)
-        {
-            log::draw(hook);
         }
 
         ImGui::SameLine();

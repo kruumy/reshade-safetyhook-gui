@@ -19,9 +19,6 @@ namespace safetyhook
         }
 
         ContextEx(){}
-
-        std::string to_string() const;
-
         
         memory_utils::pointer_analysis_report edi_report{};
         memory_utils::pointer_analysis_report esi_report{};
