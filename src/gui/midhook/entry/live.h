@@ -40,6 +40,13 @@ namespace gui::midhook::entry::live
         ImGui::SetNextItemWidth(ImGui::CalcTextSize(hex_str.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f);
         ImGui::InputText("##", hex_str.data(), hex_str.capacity() + 1, ImGuiInputTextFlags_ReadOnly);
 
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::Text("dec: %llu", static_cast<unsigned long long>(reg));
+            ImGui::EndTooltip();
+        }
+
         if (report)
         {
             draw_analysis(*report);
