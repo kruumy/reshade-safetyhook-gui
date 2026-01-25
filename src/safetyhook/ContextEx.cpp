@@ -10,48 +10,27 @@
 
 namespace safetyhook
 {
-    static void analyze_pointer(std::ostringstream& ss, uintptr_t v)
+    static void log_pointer_analysis(std::ostringstream& ss, const memory_utils::pointer_analysis_report& report, uintptr_t report_addr)
     {
-        if (!memory_utils::looks_like_pointer(v))
+        if (!report.is_valid_ptr)
         {
             return;
         }
 
-        ss << " -> ";
+        ss << " -> 0x" << std::hex << *reinterpret_cast<int*>(report_addr) << " | ";
 
-        // Try reading as string
-        std::string str;
-        if (memory_utils::safe_read_string(v, str, true))
+        if (report.as_float)
         {
-            ss << "cstr(\"" << str << "\")";
-            return;
+            ss << "float(" << *report.as_float << ") ";
         }
-
-        // Try reading as float
-        float f;
-        if (memory_utils::safe_read(v, f) && std::isfinite(f))
+        if (report.as_double)
         {
-            ss << "float(" << f << ")";
-            return;
+            ss << "double(" << *report.as_double << ") ";
         }
-
-        // Try reading as double
-        double d;
-        if (memory_utils::safe_read(v, d) && std::isfinite(d))
+        if (!report.as_string.empty())
         {
-            ss << "double(" << d << ")";
-            return;
+            ss << "string(" << report.as_string << ") ";
         }
-
-        // Try reading as pointer to another pointer
-        uintptr_t pv;
-        if (memory_utils::safe_read_pointer(v, pv))
-        {
-            ss << "*(" << "0x" << std::hex << v << ") = 0x" << pv;
-            return;
-        }
-
-        ss << "unreadable";
     }
 
     static void log_reg(std::ostringstream& ss, const char* name, uintptr_t v)
@@ -64,7 +43,8 @@ namespace safetyhook
             << v
             << std::setfill(' ');
 
-        analyze_pointer(ss, v);
+        auto analysis_report = memory_utils::analyze_pointer(v);
+        log_pointer_analysis(ss, analysis_report, v);
         ss << "\n";
     }
 

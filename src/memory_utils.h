@@ -17,20 +17,18 @@ namespace memory_utils
     {
         if (!v) return false;
 #if defined(_WIN64)
-        if (v < LOW_PTR || v > HI_PTR) return false;
+        return v >= LOW_PTR && v <= HI_PTR;
 #else
-        if (v < LOW_PTR) return false;
+        return v >= LOW_PTR;
 #endif
-        return true;
     }
 
-    bool is_executable_pointer(const void* ptr);
+    
 
     template <typename T>
     static inline bool safe_read(uintptr_t addr, T& out)
     {
-        if (!looks_like_pointer(addr))
-            return false;
+        if (!looks_like_pointer(addr)) return false;
 
         __try
         {
@@ -42,15 +40,31 @@ namespace memory_utils
             return false;
         }
     }
-    
+
+    static inline bool is_readable_pointer(uintptr_t addr)
+    {
+        if (!looks_like_pointer(addr)) return false;
+
+        uint8_t probe;
+        return safe_read(addr, probe);
+    }
 
     bool safe_read_string(uintptr_t addr, std::string& out, bool replace_line_endings = true);
 
-    static inline bool safe_read_pointer(uintptr_t addr, uintptr_t& out)
+    struct pointer_analysis_report
     {
-        if (!safe_read(addr, out))
-            return false;
+        bool is_valid_ptr;
+        float* as_float;
+        double* as_double;
+        std::string as_string;
+    };
 
-        return looks_like_pointer(out);
+    pointer_analysis_report analyze_pointer(uintptr_t addr);
+
+    static inline pointer_analysis_report analyze_pointer(void* ptr)
+    {
+        return analyze_pointer(reinterpret_cast<uintptr_t>(ptr));
     }
+
+    bool is_executable_pointer(const void* ptr);
 }
