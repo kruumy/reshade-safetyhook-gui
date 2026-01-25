@@ -32,7 +32,7 @@
     <ClInclude Include="src\gui\gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\safetyhook\ContextEx.h">
+    <ClInclude Include="src\context_wrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\memory_utils.h">

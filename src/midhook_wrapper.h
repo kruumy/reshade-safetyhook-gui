@@ -1,7 +1,7 @@
 #pragma once
 #include <chrono>
 #include <safetyhook.hpp>
-#include "safetyhook/ContextEx.h"
+#include "context_wrapper.h"
 
 class midhook_wrapper
 {
@@ -23,12 +23,12 @@ public:
 
     inline const safetyhook::Allocation& get_trampoline() const;
     
-    inline const safetyhook::ContextEx& get_last_context() const
+    inline const context_wrapper& get_last_context() const
     {
         return last_context;
     }
 private:
-    safetyhook::ContextEx last_context{};
+    context_wrapper last_context{};
     inline static std::unordered_map<uintptr_t, midhook_wrapper*> registry; // trampoline_address, this*
 
     void destination(SafetyHookContext& ctx);

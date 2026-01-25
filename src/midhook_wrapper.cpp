@@ -1,5 +1,4 @@
 #include "midhook_wrapper.h"
-#include "safetyhook/ContextEx.h"
 #include "memory_utils.h"
 
 #if SAFETYHOOK_ARCH_X86_64
@@ -62,7 +61,7 @@ std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
 void midhook_wrapper::destination(SafetyHookContext& ctx)
 {
     last_hit_time = std::chrono::steady_clock::now();
-    last_context = safetyhook::ContextEx(ctx, show_live_window);
+    last_context = context_wrapper(ctx, show_live_window);
     hit_amount++;
 }
 
