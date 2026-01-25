@@ -13,7 +13,7 @@ public:
     std::chrono::steady_clock::time_point last_hit_time{};
     size_t hit_amount = 0;
     bool show_live_window = false;
-    safetyhook::ContextEx last_context{};
+    
 
     static std::shared_ptr<midhook_wrapper> create(void* target);
 
@@ -23,7 +23,12 @@ public:
 
     inline const safetyhook::Allocation& get_trampoline() const;
     
+    inline const safetyhook::ContextEx& get_last_context() const
+    {
+        return last_context;
+    }
 private:
+    safetyhook::ContextEx last_context{};
     inline static std::unordered_map<uintptr_t, midhook_wrapper*> registry; // trampoline_address, this*
 
     void destination(SafetyHookContext& ctx);

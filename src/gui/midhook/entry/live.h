@@ -53,7 +53,7 @@ namespace gui::midhook::entry::live
         ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin(std::format("Live 0x{:X} View", (uintptr_t)hook.hook.target_address()).c_str(), &hook.show_live_window, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-            auto& ctx = hook.last_context;
+            auto& ctx = hook.get_last_context();
 
 #if SAFETYHOOK_ARCH_X86_64
             draw_register("RAX", ctx.rax);
