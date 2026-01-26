@@ -61,8 +61,6 @@ std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
 void midhook_wrapper::destination(SafetyHookContext& ctx)
 {
     last_hit_time = std::chrono::steady_clock::now();
-    last_context = context_wrapper(ctx, show_live_window);
-    hit_amount++;
 
     ctx.eax = context_override.override_eax ? context_override.eax : ctx.eax;
     ctx.ebp = context_override.override_ebp ? context_override.ebp : ctx.ebp;
@@ -74,6 +72,9 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     ctx.eip = context_override.override_eip ? context_override.eip : ctx.eip;
     ctx.esi = context_override.override_esi ? context_override.esi : ctx.esi;
     ctx.trampoline_esp = context_override.override_esp ? context_override.esp : ctx.trampoline_esp;
+
+    last_context = context_wrapper(ctx, show_live_window);
+    hit_amount++;
 }
 
 void midhook_wrapper::trampoline(SafetyHookContext& ctx)
