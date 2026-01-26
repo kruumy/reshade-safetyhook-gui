@@ -6,8 +6,7 @@
 struct context_wrapper
 {
 public:
-    safetyhook::Context ctx{};
-
+    
     context_wrapper(safetyhook::Context internal_ctx, bool do_generate_report = false) : ctx(internal_ctx)
     {
         if (do_generate_report)
@@ -27,7 +26,14 @@ public:
     memory_utils::pointer_analysis_report ebp_report{};
     memory_utils::pointer_analysis_report esp_report{};
 
+    inline const safetyhook::Context get_context() const
+    {
+        return ctx;
+    }
+
 private:
+    safetyhook::Context ctx{};
+
     bool already_generated_report = false;
     inline void generate_report()
     {

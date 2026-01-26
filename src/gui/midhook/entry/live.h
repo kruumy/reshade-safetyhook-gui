@@ -100,15 +100,15 @@ namespace gui::midhook::entry::live
             draw_register("R15", ctx.r15);
             draw_register("RIP", ctx.rip);
 #else
-            draw_register("EAX", ctx.ctx.eax, &ctx.eax_report, &hook.context_override.override_eax, &hook.context_override.eax, hook.hook.enabled());
-            draw_register("EBX", ctx.ctx.ebx, &ctx.ebx_report, &hook.context_override.override_ebx, &hook.context_override.ebx, hook.hook.enabled());
-            draw_register("ECX", ctx.ctx.ecx, &ctx.ecx_report, &hook.context_override.override_ecx, &hook.context_override.ecx, hook.hook.enabled());
-            draw_register("EDX", ctx.ctx.edx, &ctx.edx_report, &hook.context_override.override_edx, &hook.context_override.edx, hook.hook.enabled());
-            draw_register("ESI", ctx.ctx.esi, &ctx.esi_report, &hook.context_override.override_esi, &hook.context_override.esi, hook.hook.enabled());
-            draw_register("EDI", ctx.ctx.edi, &ctx.edi_report, &hook.context_override.override_edi, &hook.context_override.edi, hook.hook.enabled());
-            draw_register("EBP", ctx.ctx.ebp, &ctx.ebp_report, &hook.context_override.override_ebp, &hook.context_override.ebp, hook.hook.enabled());
-            draw_register("ESP", ctx.ctx.esp, &ctx.esp_report, &hook.context_override.override_esp, &hook.context_override.esp, hook.hook.enabled());
-            draw_register("EIP", ctx.ctx.eip, nullptr, &hook.context_override.override_eip, &hook.context_override.eip, hook.hook.enabled());
+            draw_register("EAX", ctx.get_context().eax, &ctx.eax_report, &hook.context_override.override_eax, &hook.context_override.eax, hook.hook.enabled());
+            draw_register("EBX", ctx.get_context().ebx, &ctx.ebx_report, &hook.context_override.override_ebx, &hook.context_override.ebx, hook.hook.enabled());
+            draw_register("ECX", ctx.get_context().ecx, &ctx.ecx_report, &hook.context_override.override_ecx, &hook.context_override.ecx, hook.hook.enabled());
+            draw_register("EDX", ctx.get_context().edx, &ctx.edx_report, &hook.context_override.override_edx, &hook.context_override.edx, hook.hook.enabled());
+            draw_register("ESI", ctx.get_context().esi, &ctx.esi_report, &hook.context_override.override_esi, &hook.context_override.esi, hook.hook.enabled());
+            draw_register("EDI", ctx.get_context().edi, &ctx.edi_report, &hook.context_override.override_edi, &hook.context_override.edi, hook.hook.enabled());
+            draw_register("EBP", ctx.get_context().ebp, &ctx.ebp_report, &hook.context_override.override_ebp, &hook.context_override.ebp, hook.hook.enabled());
+            draw_register("ESP", ctx.get_context().esp, &ctx.esp_report, &hook.context_override.override_esp, &hook.context_override.esp, hook.hook.enabled());
+            draw_register("EIP", ctx.get_context().eip, nullptr, &hook.context_override.override_eip, &hook.context_override.eip, hook.hook.enabled());
 
             ImGui::BeginDisabled(hook.hook.enabled());
             ImGui::SameLine();
@@ -126,7 +126,7 @@ namespace gui::midhook::entry::live
             }
             ImGui::EndDisabled();
 
-            draw_register("EFL", ctx.ctx.eflags, nullptr, &hook.context_override.override_eflags, &hook.context_override.eflags, hook.hook.enabled());
+            draw_register("EFL", ctx.get_context().eflags, nullptr, &hook.context_override.override_eflags, &hook.context_override.eflags, hook.hook.enabled());
 #endif
 		}
 		ImGui::End();
