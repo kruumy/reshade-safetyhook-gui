@@ -1,9 +1,10 @@
-#pragma once
+﻿#pragma once
 #include <windows.h>
 #include <cstdint>
 #include <cstring>
 #include <string>
 #include <Zydis/Zydis.h>
+#include <optional>
 
 namespace memory_utils
 {
@@ -54,10 +55,12 @@ namespace memory_utils
     struct pointer_analysis_report
     {
         uintptr_t pointer;
-        bool is_valid_ptr;
-        float* as_float;
-        double* as_double;
+        bool is_readable_ptr = false;
+        std::optional<uintptr_t> points_to;
+        std::optional<float> as_float;
+        std::optional<double> as_double;
         std::string as_string;
+        // TODO  as_vec3
     };
 
     pointer_analysis_report analyze_pointer(uintptr_t addr);

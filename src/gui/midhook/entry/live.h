@@ -1,27 +1,43 @@
-#pragma once
+﻿#pragma once
 #include "memory_utils.h"
 
 namespace gui::midhook::entry::live
 {
     void draw_analysis(const memory_utils::pointer_analysis_report& report)
     {
-        if (!report.is_valid_ptr)
+        if (!report.is_readable_ptr)
         {
             return;
         }
 
-        ImGui::PushID("analysis");
+        ImGui::PushID("ptr_analysis");
 
         std::stringstream ss;
+        ss << std::hex << std::uppercase;
 
-        ss << " -> 0x" << std::hex << *reinterpret_cast<int*>(report.pointer) << " | ";
+        ss << " -> ";
 
-        if (report.as_float)
-            ss << "float(" << *report.as_float << ") ";
-        if (report.as_double)
-            ss << "double(" << *report.as_double << ") ";
+        if (report.points_to.has_value())
+        {
+            ss << "0x" << report.points_to.value() << "  ";
+        }
+
+        
+
+        if (report.as_float.has_value())
+        {
+            ss << "float(" << report.as_float.value() << ") ";
+        }
+
+        if (report.as_double.has_value())
+        {
+            ss << "double(" << report.as_double.value() << ") ";
+        }
+
         if (!report.as_string.empty())
+        {
             ss << "string(" << report.as_string << ") ";
+        }
 
         ImGui::SameLine();
         ImGui::Text("%s", ss.str().c_str());

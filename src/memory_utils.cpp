@@ -1,30 +1,34 @@
-#include "memory_utils.h"
+﻿#include "memory_utils.h"
 
 namespace memory_utils
 {
     pointer_analysis_report analyze_pointer(uintptr_t addr)
     {
-        pointer_analysis_report result{};
-        result.pointer = addr;
-        result.as_float = nullptr;
-        result.as_double = nullptr;
-        result.as_string.clear();
-        result.is_valid_ptr = is_readable_pointer(addr);
+        pointer_analysis_report r{};
+        r.pointer = addr;
+        r.is_readable_ptr = is_readable_pointer(addr);
 
-        if (!result.is_valid_ptr)
-            return result;
+        if (!r.is_readable_ptr)
+            return r;
 
-        float tmp_float{};
-        const bool float_ok = (addr & (alignof(float) - 1)) == 0 && safe_read(addr, tmp_float);
-        result.as_float = float_ok ? reinterpret_cast<float*>(addr) : nullptr;
+        uintptr_t target = 0;
+        if (safe_read(addr, target))
+        {
+            r.points_to = target;
+        }
+        {
+            alignas(4) float f{};
+            if ((addr & 3) == 0 && safe_read(addr, f))
+                r.as_float = f;
+        }
+        {
+            alignas(8) double d{};
+            if ((addr & 7) == 0 && safe_read(addr, d))
+                r.as_double = d;
+        }
+        safe_read_string(addr, r.as_string);
 
-        double tmp_double{};
-        const bool double_ok = (addr & (alignof(double) - 1)) == 0 && safe_read(addr, tmp_double);
-        result.as_double = double_ok ? reinterpret_cast<double*>(addr) : nullptr;
-
-        safe_read_string(addr, result.as_string);
-
-        return result;
+        return r;
     }
 
     bool is_executable_pointer(const void* ptr)
