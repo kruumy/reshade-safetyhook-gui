@@ -29,23 +29,42 @@ namespace gui::midhook::entry::live
         ImGui::PopID();
     }
 
-    void draw_register(const std::string& name, uintptr_t reg, const memory_utils::pointer_analysis_report* report)
+    void draw_register(const std::string& name, uintptr_t reg, const memory_utils::pointer_analysis_report* report, bool* do_override_reg, uintptr_t* override_reg, bool is_hook_enabled)
     {
         ImGui::PushID(name.c_str());
 
         ImGui::Text((name + ": ").c_str());
-        
-        std::string hex_str = std::format("0x{:0{}X}", reg, sizeof(uintptr_t) * 2);
+
+        ImGui::BeginDisabled(!*do_override_reg);
+
+        std::string hex_str = std::format("0x{:0{}X}", *do_override_reg ? *override_reg : reg , sizeof(uintptr_t) * 2);
         ImGui::SameLine();
         ImGui::SetNextItemWidth(ImGui::CalcTextSize(hex_str.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f);
-        ImGui::InputText("##", hex_str.data(), hex_str.capacity() + 1, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputText("##", hex_str.data(), hex_str.capacity() + 1, *do_override_reg ? 0 : ImGuiInputTextFlags_ReadOnly);
 
-        if (ImGui::IsItemHovered())
+        ImGui::EndDisabled();
+        if (*do_override_reg)
+        {
+            unsigned long long addr = 0;
+            try
+            {
+                addr = std::stoull(hex_str, nullptr, 16);
+            }
+            catch (...) {}
+            *override_reg = addr;
+        }
+
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
         {
             ImGui::BeginTooltip();
             ImGui::Text("dec: %llu", static_cast<unsigned long long>(reg));
             ImGui::EndTooltip();
         }
+
+        ImGui::BeginDisabled(is_hook_enabled && !*do_override_reg);
+        ImGui::SameLine();
+        ImGui::Checkbox("Override", do_override_reg);
+        ImGui::EndDisabled();
 
         if (report)
         {
@@ -81,15 +100,16 @@ namespace gui::midhook::entry::live
             draw_register("R15", ctx.r15);
             draw_register("RIP", ctx.rip);
 #else
-            draw_register("EAX", ctx.ctx.eax, &ctx.eax_report);
-            draw_register("EBX", ctx.ctx.ebx, &ctx.ebx_report);
-            draw_register("ECX", ctx.ctx.ecx, &ctx.ecx_report);
-            draw_register("EDX", ctx.ctx.edx, &ctx.edx_report);
-            draw_register("ESI", ctx.ctx.esi, &ctx.esi_report);
-            draw_register("EDI", ctx.ctx.edi, &ctx.edi_report);
-            draw_register("EBP", ctx.ctx.ebp, &ctx.ebp_report);
-            draw_register("ESP", ctx.ctx.esp, &ctx.esp_report);
-            draw_register("EIP", ctx.ctx.eip, nullptr);
+            draw_register("EAX", ctx.ctx.eax, &ctx.eax_report, &hook.context_override.override_eax, &hook.context_override.eax, hook.hook.enabled());
+            draw_register("EBX", ctx.ctx.ebx, &ctx.ebx_report, &hook.context_override.override_ebx, &hook.context_override.ebx, hook.hook.enabled());
+            draw_register("ECX", ctx.ctx.ecx, &ctx.ecx_report, &hook.context_override.override_ecx, &hook.context_override.ecx, hook.hook.enabled());
+            draw_register("EDX", ctx.ctx.edx, &ctx.edx_report, &hook.context_override.override_edx, &hook.context_override.edx, hook.hook.enabled());
+            draw_register("ESI", ctx.ctx.esi, &ctx.esi_report, &hook.context_override.override_esi, &hook.context_override.esi, hook.hook.enabled());
+            draw_register("EDI", ctx.ctx.edi, &ctx.edi_report, &hook.context_override.override_edi, &hook.context_override.edi, hook.hook.enabled());
+            draw_register("EBP", ctx.ctx.ebp, &ctx.ebp_report, &hook.context_override.override_ebp, &hook.context_override.ebp, hook.hook.enabled());
+            draw_register("ESP", ctx.ctx.esp, &ctx.esp_report, &hook.context_override.override_esp, &hook.context_override.esp, hook.hook.enabled());
+            draw_register("EIP", ctx.ctx.eip, nullptr, &hook.context_override.override_eip, &hook.context_override.eip, hook.hook.enabled());
+            draw_register("EFL", ctx.ctx.eflags, nullptr, &hook.context_override.override_eflags, &hook.context_override.eflags, hook.hook.enabled());
 #endif
 		}
 		ImGui::End();
