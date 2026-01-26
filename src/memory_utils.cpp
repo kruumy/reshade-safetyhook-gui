@@ -47,6 +47,36 @@ namespace memory_utils
         return (mbi.Protect & executable_flags) != 0;
     }
 
+    uintptr_t find_next_mnemonic(uintptr_t start_addr, ZydisMnemonic target_mnemonic) 
+    {
+        ZydisDecoder decoder;
+        ZydisDecodedInstruction ix;
+
+#if SAFETYHOOK_ARCH_X86_64
+        ZydisDecoderInit(&decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64);
+#else
+        ZydisDecoderInit(&decoder, ZYDIS_MACHINE_MODE_LEGACY_32, ZYDIS_STACK_WIDTH_32);
+#endif
+        const ZyanUSize max_length = 4096;
+        ZyanUSize offset = 0;
+        while (offset < max_length) 
+        {
+            ZyanStatus status = ZydisDecoderDecodeInstruction(&decoder, NULL, reinterpret_cast<const uint8_t*>(start_addr) + offset, max_length - offset, &ix);
+            if (!ZYAN_SUCCESS(status) || ix.length == 0) 
+            {
+                return 0;
+            }
+            if (ix.mnemonic == target_mnemonic) 
+            {
+                return start_addr + offset;
+            }
+            offset += ix.length;
+        }
+        return 0;
+    }
+
+
+
     bool safe_read_string(uintptr_t addr, std::string& out, bool replace_line_endings)
     {
         if (!looks_like_pointer(addr))

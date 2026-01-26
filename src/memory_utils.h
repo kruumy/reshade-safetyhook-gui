@@ -3,8 +3,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
-#include <cctype>
-#include <sstream>
+#include <Zydis/Zydis.h>
 
 namespace memory_utils
 {
@@ -69,4 +68,5 @@ namespace memory_utils
     }
 
     bool is_executable_pointer(const void* ptr);
+    uintptr_t find_next_mnemonic(uintptr_t start_addr, ZydisMnemonic target_mnemonic);
 }

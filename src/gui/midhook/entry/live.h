@@ -77,7 +77,7 @@ namespace gui::midhook::entry::live
 	void draw(midhook_wrapper& hook)
 	{
         ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-		if (ImGui::Begin(std::format("Live 0x{:X} View", (uintptr_t)hook.hook.target_address()).c_str(), &hook.show_live_window, ImGuiWindowFlags_AlwaysAutoResize))
+		if (ImGui::Begin(std::format("Live 0x{:X} View", hook.hook.target_address()).c_str(), &hook.show_live_window, ImGuiWindowFlags_AlwaysAutoResize))
 		{
             auto& ctx = hook.get_last_context();
 
@@ -109,6 +109,23 @@ namespace gui::midhook::entry::live
             draw_register("EBP", ctx.ctx.ebp, &ctx.ebp_report, &hook.context_override.override_ebp, &hook.context_override.ebp, hook.hook.enabled());
             draw_register("ESP", ctx.ctx.esp, &ctx.esp_report, &hook.context_override.override_esp, &hook.context_override.esp, hook.hook.enabled());
             draw_register("EIP", ctx.ctx.eip, nullptr, &hook.context_override.override_eip, &hook.context_override.eip, hook.hook.enabled());
+
+            ImGui::BeginDisabled(hook.hook.enabled());
+            ImGui::SameLine();
+            if (ImGui::Button("Set Trampoline to next RET"))
+            {
+                if (auto ret_location = memory_utils::find_next_mnemonic(hook.hook.target_address(), ZYDIS_MNEMONIC_RET))
+                {
+                    hook.context_override.eip = ret_location;
+                    hook.context_override.override_eip = true;
+                }
+                else
+                {
+                    reshade::log::message(reshade::log::level::error, "Could not find next ret instruction");
+                }
+            }
+            ImGui::EndDisabled();
+
             draw_register("EFL", ctx.ctx.eflags, nullptr, &hook.context_override.override_eflags, &hook.context_override.eflags, hook.hook.enabled());
 #endif
 		}
