@@ -95,6 +95,16 @@ namespace gui::midhook::entry::live
         ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin(std::format("Live 0x{:X} View", hook.hook.target_address()).c_str(), &hook.show_live_window, ImGuiWindowFlags_AlwaysAutoResize))
 		{
+            flash_row_background(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hook.last_hit_time).count());
+
+            bool enabled = hook.hook.enabled();
+            if (ImGui::Checkbox("Enabled", &enabled))
+            {
+                enabled ? hook.hook.enable() : hook.hook.disable();
+            }
+            ImGui::Separator();
+
+
             auto& ctx = hook.get_last_context();
 
 #if SAFETYHOOK_ARCH_X86_64

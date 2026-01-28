@@ -1,6 +1,7 @@
 #pragma once
 #include <imgui.h>
 #include <reshade.hpp>
+#include "utils.h"
 #include "midhook_wrapper.h"
 #include "midhook/midhook.h"
 

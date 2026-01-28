@@ -7,24 +7,7 @@ namespace gui::midhook::entry
     {
         ImGui::PushID(&hook);
 
-        auto ms_since_hit =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::steady_clock::now() - hook.last_hit_time).count();
-
-        if (ms_since_hit < 1000)
-        {
-            float t = 1.0f - (float(ms_since_hit) / 1000.0f);
-
-            ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 1.0f, 0.0f, t * 0.3f));
-            ImVec2 p0 = ImGui::GetCursorScreenPos();
-            ImVec2 p1 =
-            {
-                p0.x + ImGui::GetContentRegionAvail().x,
-                p0.y + ImGui::GetFrameHeightWithSpacing()
-            };
-
-            ImGui::GetWindowDrawList()->AddRectFilled(p0, p1, col);
-        }
+        flash_row_background(std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::steady_clock::now() - hook.last_hit_time).count());
 
         if (ImGui::Button("X"))
         {
