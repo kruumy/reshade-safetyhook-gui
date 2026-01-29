@@ -1,7 +1,9 @@
 #pragma once
 #include <chrono>
 #include <safetyhook.hpp>
-#include "context_wrapper.h"
+#include <map>
+#include <pointer_analysis.h>
+
 
 class midhook_wrapper
 {
@@ -12,6 +14,7 @@ public:
 
     std::chrono::steady_clock::time_point last_hit_time{};
     size_t hit_amount = 0;
+
     bool show_live_window = false;
     
 
@@ -19,29 +22,22 @@ public:
 
     explicit midhook_wrapper(SafetyHookMid internal_hook);
     ~midhook_wrapper();
-   
-
-    inline const safetyhook::Allocation& get_trampoline() const;
     
-    inline const context_wrapper& get_last_context() const
+    struct register_definition
     {
-        return last_context;
-    }
-
-    struct override_context : safetyhook::Context
-    {
-#if SAFETYHOOK_ARCH_X86_64
-        bool override_rflags, override_r15, override_r14, override_r13, override_r12, override_r11, override_r10, override_r9, override_r8, override_rdi, override_rsi, override_rdx, override_rcx, override_rbx, override_rax, override_rbp, override_rsp, override_rip;
-#elif SAFETYHOOK_ARCH_X86_32
-        bool override_eflags, override_edi, override_esi, override_edx, override_ecx, override_ebx, override_eax, override_ebp, override_esp, override_eip;
-#endif
+        uintptr_t value = 0x0;
+        pointer_analysis::report report{};
+        bool do_override = false;
+        uintptr_t override_value = 0x0;
     };
 
-    override_context context_override{};
+    std::map<const char*, register_definition> live_context;
 
+    inline const safetyhook::Allocation& get_trampoline() const;
 private:
-    context_wrapper last_context{};
     inline static std::unordered_map<uintptr_t, midhook_wrapper*> registry; // trampoline_address, this*
+
+    void init_live_context();
 
     void destination(SafetyHookContext& ctx);
     static void trampoline(SafetyHookContext& ctx);

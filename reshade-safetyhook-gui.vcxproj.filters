@@ -24,15 +24,15 @@
     <ClCompile Include="src\memory_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\pointer_analysis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\midhook_wrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\gui\gui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\context_wrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\memory_utils.h">
@@ -48,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\gui\utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pointer_analysis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

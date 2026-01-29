@@ -4,27 +4,21 @@
 #include <cstring>
 #include <string>
 #include <Zydis/Zydis.h>
-#include <optional>
-
 namespace memory_utils
 {
     static constexpr size_t    MAX_STRING_LEN = 64;
     static constexpr uintptr_t LOW_PTR = 0x10000;
 #if defined(_WIN64)
     static constexpr uintptr_t HI_PTR = 0x00007FFFFFFFFFFF;
+#else
+    static constexpr uintptr_t HI_PTR = 0x7FFFFFFF;
 #endif
 
     static inline bool looks_like_pointer(uintptr_t v)
     {
         if (!v) return false;
-#if defined(_WIN64)
         return v >= LOW_PTR && v <= HI_PTR;
-#else
-        return v >= LOW_PTR;
-#endif
     }
-
-    
 
     template <typename T>
     static inline bool safe_read(uintptr_t addr, T& out)
@@ -52,23 +46,7 @@ namespace memory_utils
 
     bool safe_read_string(uintptr_t addr, std::string& out, bool replace_line_endings = true);
 
-    struct pointer_analysis_report
-    {
-        uintptr_t pointer;
-        bool is_readable_ptr = false;
-        std::optional<uintptr_t> points_to;
-        std::optional<float> as_float;
-        std::optional<double> as_double;
-        std::string as_string;
-        // TODO  as_vec3
-    };
-
-    pointer_analysis_report analyze_pointer(uintptr_t addr);
-
-    static inline pointer_analysis_report analyze_pointer(void* ptr)
-    {
-        return analyze_pointer(reinterpret_cast<uintptr_t>(ptr));
-    }
+   
 
     bool is_executable_pointer(const void* ptr);
     uintptr_t find_next_mnemonic(uintptr_t start_addr, ZydisMnemonic target_mnemonic);

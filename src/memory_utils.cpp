@@ -2,35 +2,6 @@
 
 namespace memory_utils
 {
-    pointer_analysis_report analyze_pointer(uintptr_t addr)
-    {
-        pointer_analysis_report r{};
-        r.pointer = addr;
-        r.is_readable_ptr = is_readable_pointer(addr);
-
-        if (!r.is_readable_ptr)
-            return r;
-
-        uintptr_t target = 0;
-        if (safe_read(addr, target))
-        {
-            r.points_to = target;
-        }
-        {
-            alignas(4) float f{};
-            if ((addr & 3) == 0 && safe_read(addr, f))
-                r.as_float = f;
-        }
-        {
-            alignas(8) double d{};
-            if ((addr & 7) == 0 && safe_read(addr, d))
-                r.as_double = d;
-        }
-        safe_read_string(addr, r.as_string);
-
-        return r;
-    }
-
     bool is_executable_pointer(const void* ptr)
     {
         uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
@@ -78,8 +49,6 @@ namespace memory_utils
         }
         return 0;
     }
-
-
 
     bool safe_read_string(uintptr_t addr, std::string& out, bool replace_line_endings)
     {

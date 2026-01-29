@@ -177,6 +177,7 @@
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\memory_utils.cpp" />
     <ClCompile Include="src\midhook_wrapper.cpp" />
+    <ClCompile Include="src\pointer_analysis.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\gui\gui.h" />
@@ -186,7 +187,7 @@
     <ClInclude Include="src\gui\utils.h" />
     <ClInclude Include="src\memory_utils.h" />
     <ClInclude Include="src\midhook_wrapper.h" />
-    <ClInclude Include="src\context_wrapper.h" />
+    <ClInclude Include="src\pointer_analysis.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
