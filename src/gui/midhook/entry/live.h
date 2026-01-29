@@ -85,26 +85,53 @@ namespace gui::midhook::entry::live
         ImGui::PopID();
     }
 
-    void draw_register_and_offsets(const std::string& name, midhook_wrapper::register_definition& reg, bool is_hook_enabled)
+    void draw_offsets(const std::string& name, midhook_wrapper::register_definition& reg, bool is_hook_enabled)
     {
+        constexpr float INDENT = 32.0f;
+
         ImGui::PushID(name.c_str());
-        draw_register(name, reg, is_hook_enabled);
-        ImGui::SameLine();
-        if (ImGui::Button("+"))
+        ImGui::Indent(INDENT);
+
+        for (size_t i = 0; i < reg.offset_definitions.size();)
         {
-            reg.offset_definitions.push_back(std::pair<int, midhook_wrapper::offset_register_definition>(sizeof(void*), midhook_wrapper::offset_register_definition{}));
-        }
-        for (auto& offset_register : reg.offset_definitions)
-        {
-            ImGui::Dummy(ImVec2(25, 0));
+            ImGui::PushID(static_cast<int>(i));
 
             ImGui::SetNextItemWidth(75);
+            ImGui::InputInt(("##offset_" + name + "_" + std::to_string(i)).c_str(), &reg.offset_definitions[i].first, 1, sizeof(void*));
+
             ImGui::SameLine();
-            ImGui::InputInt(("##offset_" + name + "_" + std::to_string(offset_register.first)).c_str(), &offset_register.first, 1, sizeof(void*));
+            if (ImGui::Button("Delete"))
+            {
+                reg.offset_definitions.erase(reg.offset_definitions.begin() + i);
+                ImGui::PopID();
+                continue;
+            }
+
             ImGui::SameLine();
-            draw_register(name + " + " + std::to_string(offset_register.first), offset_register.second, is_hook_enabled);
+            draw_register(name + " + 0x" + std::to_string(reg.offset_definitions[i].first), reg.offset_definitions[i].second, is_hook_enabled);
+
+            ImGui::PopID();
+
+            ++i;  // only increment when we didn't erase
         }
+
+        if (ImGui::Button("+"))
+        {
+            reg.offset_definitions.emplace_back(
+                static_cast<int>(sizeof(void*)),
+                midhook_wrapper::offset_register_definition{}
+            );
+        }
+
+        ImGui::Unindent(INDENT);
         ImGui::PopID();
+    }
+
+    void draw_register_and_offsets(const std::string& name, midhook_wrapper::register_definition& reg, bool is_hook_enabled)
+    {
+        ImGui::Separator();
+        draw_register(name, reg, is_hook_enabled);
+        draw_offsets(name, reg, is_hook_enabled);
     }
 
 	void draw(midhook_wrapper& hook)
@@ -119,21 +146,7 @@ namespace gui::midhook::entry::live
             {
                 enabled ? hook.hook.enable() : hook.hook.disable();
             }
-            ImGui::Separator();
 
-#if SAFETYHOOK_ARCH_X86_64
-    //TODO x64
-#else
-            draw_register_and_offsets("EAX", hook.live_context["EAX"], hook.hook.enabled());
-            draw_register_and_offsets("ECX", hook.live_context["ECX"], hook.hook.enabled());
-            draw_register_and_offsets("EDX", hook.live_context["EDX"], hook.hook.enabled());
-            draw_register_and_offsets("EBX", hook.live_context["EBX"], hook.hook.enabled());
-            draw_register_and_offsets("ESI", hook.live_context["ESI"], hook.hook.enabled());
-            draw_register_and_offsets("EDI", hook.live_context["EDI"], hook.hook.enabled());
-            draw_register_and_offsets("EBP", hook.live_context["EBP"], hook.hook.enabled());
-            draw_register_and_offsets("ESP", hook.live_context["ESP"], hook.hook.enabled());
-
-            draw_register("EIP", hook.live_context["EIP"], hook.hook.enabled());
             ImGui::BeginDisabled(hook.hook.enabled());
             ImGui::SameLine();
             if (ImGui::Button("Set Trampoline to next RET"))
@@ -149,8 +162,23 @@ namespace gui::midhook::entry::live
                 }
             }
             ImGui::EndDisabled();
-#endif
 
+            ImGui::SameLine();
+            ImGui::Text("Hits: %d", hook.hit_amount);
+
+#if SAFETYHOOK_ARCH_X86_64
+    //TODO x64
+#else
+            draw_register_and_offsets("EAX", hook.live_context["EAX"], hook.hook.enabled());
+            draw_register_and_offsets("ECX", hook.live_context["ECX"], hook.hook.enabled());
+            draw_register_and_offsets("EDX", hook.live_context["EDX"], hook.hook.enabled());
+            draw_register_and_offsets("EBX", hook.live_context["EBX"], hook.hook.enabled());
+            draw_register_and_offsets("ESI", hook.live_context["ESI"], hook.hook.enabled());
+            draw_register_and_offsets("EDI", hook.live_context["EDI"], hook.hook.enabled());
+            draw_register_and_offsets("EBP", hook.live_context["EBP"], hook.hook.enabled());
+            draw_register_and_offsets("ESP", hook.live_context["ESP"], hook.hook.enabled());
+            draw_register_and_offsets("EIP", hook.live_context["EIP"], hook.hook.enabled());
+#endif
 		}
 		ImGui::End();
 	}

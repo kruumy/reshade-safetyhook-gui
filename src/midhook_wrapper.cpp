@@ -139,7 +139,7 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     handle_offsets("EDI", ctx.edi);
     handle_offsets("EBP", ctx.ebp);
     handle_offsets("ESP", ctx.esp);
-    // EIP is trampoline address no need to have offsets
+    handle_offsets("EIP", ctx.esp);
 }
 
 void midhook_wrapper::trampoline(SafetyHookContext& ctx)
