@@ -1,7 +1,6 @@
 #pragma once
 #include <chrono>
 #include <safetyhook.hpp>
-#include <map>
 #include <pointer_analysis.h>
 
 
@@ -23,7 +22,7 @@ public:
     explicit midhook_wrapper(SafetyHookMid internal_hook);
     ~midhook_wrapper();
     
-    struct register_definition
+    struct offset_register_definition
     {
         uintptr_t value = 0x0;
         pointer_analysis::report report{};
@@ -31,13 +30,19 @@ public:
         uintptr_t override_value = 0x0;
     };
 
-    std::map<const char*, register_definition> live_context;
+    struct register_definition : offset_register_definition
+    {
+        std::vector<std::pair<int, offset_register_definition>> offset_definitions;
+    };
+
+    std::unordered_map<const char*, register_definition> live_context;
 
     inline const safetyhook::Allocation& get_trampoline() const;
 private:
     inline static std::unordered_map<uintptr_t, midhook_wrapper*> registry; // trampoline_address, this*
 
     void init_live_context();
+    void handle_offsets(const char* name, const uintptr_t base_reg);
 
     void destination(SafetyHookContext& ctx);
     static void trampoline(SafetyHookContext& ctx);

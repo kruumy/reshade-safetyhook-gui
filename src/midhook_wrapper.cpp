@@ -77,6 +77,22 @@ void midhook_wrapper::init_live_context()
     }
 }
 
+void midhook_wrapper::handle_offsets(const char* name, const uintptr_t base_reg)
+{
+    for (auto& item : live_context[name].offset_definitions)
+    {
+        item.second.value = base_reg + item.first;
+        if (show_live_window)
+        {
+            item.second.report = pointer_analysis::analyze_pointer(item.second.value);
+        }
+        if (item.second.do_override)
+        {
+            item.second.override_value; // TODO
+        }
+    }
+}
+
 void midhook_wrapper::destination(SafetyHookContext& ctx)
 {
     last_hit_time = std::chrono::steady_clock::now();
@@ -115,6 +131,15 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     ctx.trampoline_esp = live_context["ESP"].do_override ? live_context["ESP"].override_value : ctx.trampoline_esp;
     ctx.eip = live_context["EIP"].do_override ? live_context["EIP"].override_value : ctx.eip;
 
+    handle_offsets("EAX", ctx.eax);
+    handle_offsets("ECX", ctx.ecx);
+    handle_offsets("EDX", ctx.edx);
+    handle_offsets("EBX", ctx.ebx);
+    handle_offsets("ESI", ctx.esi);
+    handle_offsets("EDI", ctx.edi);
+    handle_offsets("EBP", ctx.ebp);
+    handle_offsets("ESP", ctx.esp);
+    // EIP is trampoline address no need to have offsets
 }
 
 void midhook_wrapper::trampoline(SafetyHookContext& ctx)
