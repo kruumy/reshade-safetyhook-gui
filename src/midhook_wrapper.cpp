@@ -108,6 +108,26 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     live_context["ESP"].value = ctx.esp;
     live_context["EIP"].value = ctx.eip;
 
+    handle_offsets("EAX", ctx.eax);
+    handle_offsets("ECX", ctx.ecx);
+    handle_offsets("EDX", ctx.edx);
+    handle_offsets("EBX", ctx.ebx);
+    handle_offsets("ESI", ctx.esi);
+    handle_offsets("EDI", ctx.edi);
+    handle_offsets("EBP", ctx.ebp);
+    handle_offsets("ESP", ctx.esp);
+    handle_offsets("EIP", ctx.esp);
+
+    ctx.eax = live_context["EAX"].do_override ? live_context["EAX"].override_value : ctx.eax;
+    ctx.ecx = live_context["ECX"].do_override ? live_context["ECX"].override_value : ctx.ecx;
+    ctx.edx = live_context["EDX"].do_override ? live_context["EDX"].override_value : ctx.edx;
+    ctx.ebx = live_context["EBX"].do_override ? live_context["EBX"].override_value : ctx.ebx;
+    ctx.esi = live_context["ESI"].do_override ? live_context["ESI"].override_value : ctx.esi;
+    ctx.edi = live_context["EDI"].do_override ? live_context["EDI"].override_value : ctx.edi;
+    ctx.ebp = live_context["EBP"].do_override ? live_context["EBP"].override_value : ctx.ebp;
+    ctx.trampoline_esp = live_context["ESP"].do_override ? live_context["ESP"].override_value : ctx.trampoline_esp;
+    ctx.eip = live_context["EIP"].do_override ? live_context["EIP"].override_value : ctx.eip;
+
     if (show_live_window)
     {
         live_context["EAX"].report = pointer_analysis::analyze_pointer(ctx.eax);
@@ -120,26 +140,6 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
         live_context["ESP"].report = pointer_analysis::analyze_pointer(ctx.esp);
         // EIP is trampoline address no need to analyze
     }
-    
-    ctx.eax = live_context["EAX"].do_override ? live_context["EAX"].override_value : ctx.eax;
-    ctx.ecx = live_context["ECX"].do_override ? live_context["ECX"].override_value : ctx.ecx;
-    ctx.edx = live_context["EDX"].do_override ? live_context["EDX"].override_value : ctx.edx;
-    ctx.ebx = live_context["EBX"].do_override ? live_context["EBX"].override_value : ctx.ebx;
-    ctx.esi = live_context["ESI"].do_override ? live_context["ESI"].override_value : ctx.esi;
-    ctx.edi = live_context["EDI"].do_override ? live_context["EDI"].override_value : ctx.edi;
-    ctx.ebp = live_context["EBP"].do_override ? live_context["EBP"].override_value : ctx.ebp;
-    ctx.trampoline_esp = live_context["ESP"].do_override ? live_context["ESP"].override_value : ctx.trampoline_esp;
-    ctx.eip = live_context["EIP"].do_override ? live_context["EIP"].override_value : ctx.eip;
-
-    handle_offsets("EAX", ctx.eax);
-    handle_offsets("ECX", ctx.ecx);
-    handle_offsets("EDX", ctx.edx);
-    handle_offsets("EBX", ctx.ebx);
-    handle_offsets("ESI", ctx.esi);
-    handle_offsets("EDI", ctx.edi);
-    handle_offsets("EBP", ctx.ebp);
-    handle_offsets("ESP", ctx.esp);
-    handle_offsets("EIP", ctx.esp);
 }
 
 void midhook_wrapper::trampoline(SafetyHookContext& ctx)
