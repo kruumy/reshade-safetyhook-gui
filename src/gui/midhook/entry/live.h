@@ -5,7 +5,7 @@ namespace gui::midhook::entry::live
 {
     void draw_analysis(const pointer_analysis::report& report)
     {
-        if (!report.is_readable_ptr)
+        if (!report.is_readable_ptr())
         {
             return;
         }
