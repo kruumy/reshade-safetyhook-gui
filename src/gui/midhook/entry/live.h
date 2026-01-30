@@ -97,7 +97,8 @@ namespace gui::midhook::entry::live
             ImGui::PushID(static_cast<int>(i));
 
             ImGui::SetNextItemWidth(75);
-            ImGui::InputInt(("##offset_" + name + "_" + std::to_string(i)).c_str(), &reg.offset_definitions[i].first, 1, sizeof(void*));
+            ImGui::InputInt(("##offset_" + name + "_" + std::to_string(i)).c_str(), &reg.offset_definitions[i].first, 1, sizeof(void*), 
+                (is_hook_enabled && reg.offset_definitions[i].second.do_override) ? ImGuiInputTextFlags_ReadOnly : 0);
 
             ImGui::SameLine();
             if (ImGui::Button("Delete"))

@@ -1,4 +1,4 @@
-#include "midhook_wrapper.h"
+﻿#include "midhook_wrapper.h"
 #include "memory_utils.h"
 #include "pointer_analysis.h"
 
@@ -82,13 +82,16 @@ void midhook_wrapper::handle_offsets(const char* name, const uintptr_t base_reg)
     for (auto& item : live_context[name].offset_definitions)
     {
         item.second.value = base_reg + item.first;
+        if (item.second.do_override)
+        {
+            if (!memory_utils::safe_write(item.second.value, item.second.override_value))
+            {
+                item.second.do_override = false;
+            }
+        }
         if (show_live_window)
         {
             item.second.report = pointer_analysis::analyze_pointer(item.second.value);
-        }
-        if (item.second.do_override)
-        {
-            item.second.override_value; // TODO
         }
     }
 }

@@ -36,6 +36,22 @@ namespace memory_utils
         }
     }
 
+    template <typename T>
+    static inline bool safe_write(uintptr_t addr, const T& value)
+    {
+        if (!looks_like_pointer(addr)) return false;
+
+        __try
+        {
+            std::memcpy(reinterpret_cast<void*>(addr), &value, sizeof(T));
+            return true;
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        {
+            return false;
+        }
+    }
+
     static inline bool is_readable_pointer(uintptr_t addr)
     {
         if (!looks_like_pointer(addr)) return false;
