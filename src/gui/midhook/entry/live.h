@@ -85,6 +85,67 @@ namespace gui::midhook::entry::live
         ImGui::PopID();
     }
 
+    bool draw_offset(const std::string& name, bool is_hook_enabled, size_t i, std::vector<std::pair<int, midhook_wrapper::offset_register_definition>>& offset_definitions)
+    {
+        ImGui::PushID(static_cast<int>(i));
+        auto& reg = offset_definitions[i];
+
+        if (ImGui::Button("-"))
+        {
+            offset_definitions.erase(offset_definitions.begin() + i);
+            ImGui::PopID();
+            return false;
+        }
+
+        ImGui::SameLine();
+        ImGui::Text((name + " +").c_str());
+
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(75);
+        ImGui::InputInt(("##offset_" + name + "_" + std::to_string(i)).c_str(), &reg.first, 1, sizeof(void*),
+            (is_hook_enabled && reg.second.do_override) ? ImGuiInputTextFlags_ReadOnly : 0);
+
+        ImGui::SameLine();
+        ImGui::Text(": ");
+
+        ImGui::SameLine();
+        ImGui::Text("%s", std::format("0x{:0{}X}", reg.second.value, sizeof(void*) * 2).c_str());
+
+        if (reg.second.report.as_uintptr.has_value())
+        {
+            ImGui::SameLine();
+            ImGui::Text(" -> ");
+
+            ImGui::BeginDisabled(!reg.second.do_override);
+            std::string hex_str = std::format("0x{:0{}X}", reg.second.do_override ? reg.second.override_value : reg.second.report.as_uintptr.value(), sizeof(void*) * 2);
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(ImGui::CalcTextSize(hex_str.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f);
+            ImGui::InputText("##", hex_str.data(), hex_str.capacity() + 1, reg.second.do_override ? 0 : ImGuiInputTextFlags_ReadOnly);
+            ImGui::EndDisabled();
+
+            if (reg.second.do_override)
+            {
+                unsigned long long addr = 0;
+                try
+                {
+                    addr = std::stoull(hex_str, nullptr, 16);
+                }
+                catch (...) {}
+                reg.second.override_value = addr;
+            }
+
+            ImGui::BeginDisabled(is_hook_enabled && !reg.second.do_override);
+            ImGui::SameLine();
+            ImGui::Checkbox("Override", &reg.second.do_override);
+            ImGui::EndDisabled();
+        }
+
+        draw_analysis(reg.second.report);
+
+        ImGui::PopID();
+        return true;
+    }
+
     void draw_offsets(const std::string& name, midhook_wrapper::register_definition& reg, bool is_hook_enabled)
     {
         constexpr float INDENT = 32.0f;
@@ -94,26 +155,11 @@ namespace gui::midhook::entry::live
 
         for (size_t i = 0; i < reg.offset_definitions.size();)
         {
-            ImGui::PushID(static_cast<int>(i));
-
-            ImGui::SetNextItemWidth(75);
-            ImGui::InputInt(("##offset_" + name + "_" + std::to_string(i)).c_str(), &reg.offset_definitions[i].first, 1, sizeof(void*), 
-                (is_hook_enabled && reg.offset_definitions[i].second.do_override) ? ImGuiInputTextFlags_ReadOnly : 0);
-
-            ImGui::SameLine();
-            if (ImGui::Button("Delete"))
+            
+            if (draw_offset(name, is_hook_enabled, i, reg.offset_definitions))
             {
-                reg.offset_definitions.erase(reg.offset_definitions.begin() + i);
-                ImGui::PopID();
-                continue;
+                ++i;
             }
-
-            ImGui::SameLine();
-            draw_register(name + " + 0x" + std::to_string(reg.offset_definitions[i].first), reg.offset_definitions[i].second, is_hook_enabled);
-
-            ImGui::PopID();
-
-            ++i;  // only increment when we didn't erase
         }
 
         if (ImGui::Button("+"))
