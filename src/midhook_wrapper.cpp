@@ -48,15 +48,12 @@ std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
 
     auto internal_hook = safetyhook::MidHook::create(target, trampoline, safetyhook::MidHook::Flags::StartDisabled);
 
-    if (!internal_hook)
+    if (!internal_hook.has_value())
     {
         return nullptr;
     }
 
-    std::shared_ptr<midhook_wrapper> object = std::make_shared<midhook_wrapper>(std::move(*internal_hook));
-    midhooks.push_back(object);
-
-    return object;
+    return midhooks.emplace_back(std::make_shared<midhook_wrapper>(std::move(*internal_hook)));
 }
 
 void midhook_wrapper::init_live_context()
