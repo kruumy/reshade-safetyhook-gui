@@ -23,7 +23,7 @@ namespace gui::allocator
     }
     static inline std::vector<std::pair<data_type::type, safetyhook::Allocation>> allocations;
 
-    bool draw_allocation_row(data_type::type type, safetyhook::Allocation& allocation)
+    bool draw_allocation_row(data_type::type type, safetyhook::Allocation& allocation, size_t index)
     {
         ImGui::PushID(&allocation);
 
@@ -68,19 +68,12 @@ namespace gui::allocator
 
         if (ImGui::Button("Free"))
         {
-            for (auto it = allocations.begin(); it != allocations.end(); ++it)
-            {
-                if (it->second.address() == allocation.address())
-                {
-                    allocations.erase(it);
-                    break;
-                }
-            }
+            allocations.erase(allocations.begin() + index);
+            ImGui::PopID();
             return false;
         }
 
         ImGui::PopID();
-
         return true;
     }
 
@@ -168,7 +161,7 @@ namespace gui::allocator
         for (size_t i = 0; i < allocations.size(); )
         {
             ImGui::Separator();
-            if (draw_allocation_row(allocations[i].first, allocations[i].second))
+            if (draw_allocation_row(allocations[i].first, allocations[i].second, i))
             {
                 ++i;
             }
