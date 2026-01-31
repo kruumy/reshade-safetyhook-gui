@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "midhook_wrapper.h"
 #include "midhook/midhook.h"
+#include "allocator.h"
 
 namespace gui
 {
@@ -14,6 +15,11 @@ namespace gui
 		if (ImGui::CollapsingHeader("Mid Hooks", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			midhook::draw();
+		}
+
+		if (ImGui::CollapsingHeader("Allocator", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			allocator::draw();
 		}
 
 		ImGui::PopID();
