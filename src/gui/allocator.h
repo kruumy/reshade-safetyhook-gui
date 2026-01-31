@@ -38,6 +38,9 @@ namespace gui::allocator
         ImGui::InputText("##address", addr_buf, sizeof(addr_buf), ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 
         ImGui::SameLine();
+        ImGui::Text("->");
+
+        ImGui::SameLine();
         if (allocation.data() == nullptr)
         {
             ImGui::TextUnformatted("Invalid allocation (null data)");
