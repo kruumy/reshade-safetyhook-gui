@@ -41,10 +41,7 @@
     <ClInclude Include="src\gui\midhook\midhook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\gui\midhook\entry\entry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\gui\midhook\entry\live.h">
+    <ClInclude Include="src\gui\midhook\live.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\gui\utils.h">

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "memory_utils.h"
 
-namespace gui::midhook::entry::live
+namespace gui::midhook::live
 {
     void draw_analysis(const pointer_analysis::report& report)
     {
