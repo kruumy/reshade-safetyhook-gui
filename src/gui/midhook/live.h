@@ -215,13 +215,14 @@ namespace gui::midhook::live
 
 		ImGui::Indent(ImGui::CalcTextSize(label.c_str()).x);
 		ImGui::Dummy(ImVec2(0.0f, 0.0f));
-        for (size_t k = 0; k < 4; k++)
+
+        auto draw_float = [&](size_t i) 
         {
-			size_t i = (k / 2 * 2) + (1 - k % 2); // 1,0,3,2 order
             ImGui::SameLine();
             ImGui::SetNextItemWidth(xmm_raw_byte_width / static_cast<float>(4));
             ImGui::DragFloat(("##f" + std::to_string(i)).c_str(), &((reg.do_override ? reg.override_value : reg.value).f32[i]), 1.0f, 0.0f, 0.0f, "%.3f");
-        }
+        };
+        draw_float(1); draw_float(0); draw_float(3); draw_float(2);
 
         ImGui::Dummy(ImVec2(0.0f, 0.0f));
         for (size_t i = 0; i < 2; i++)
