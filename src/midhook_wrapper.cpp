@@ -139,8 +139,15 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     live_xmm_context[13].value = ctx.xmm13;
     live_xmm_context[14].value = ctx.xmm14;
     live_xmm_context[15].value = ctx.xmm15;
+    ctx.xmm8 = live_xmm_context[8].do_override ? live_xmm_context[8].override_value : ctx.xmm8;
+    ctx.xmm9 = live_xmm_context[9].do_override ? live_xmm_context[9].override_value : ctx.xmm9;
+    ctx.xmm10 = live_xmm_context[10].do_override ? live_xmm_context[10].override_value : ctx.xmm10;
+    ctx.xmm11 = live_xmm_context[11].do_override ? live_xmm_context[11].override_value : ctx.xmm11;
+    ctx.xmm12 = live_xmm_context[12].do_override ? live_xmm_context[12].override_value : ctx.xmm12;
+    ctx.xmm13 = live_xmm_context[13].do_override ? live_xmm_context[13].override_value : ctx.xmm13;
+    ctx.xmm14 = live_xmm_context[14].do_override ? live_xmm_context[14].override_value : ctx.xmm14;
+    ctx.xmm15 = live_xmm_context[15].do_override ? live_xmm_context[15].override_value : ctx.xmm15;
 #endif
-
 
 #if SAFETYHOOK_ARCH_X86_32
     ctx.eax = live_context["EAX"].do_override ? live_context["EAX"].override_value : ctx.eax;
