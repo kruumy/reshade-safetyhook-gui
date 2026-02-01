@@ -181,6 +181,31 @@ namespace gui::midhook::live
         draw_offsets(name, reg, is_hook_enabled);
     }
 
+    void draw_xmm_register(const int reg_num, midhook_wrapper::xmm_register_definition& reg, bool is_hook_enabled)
+    {
+        ImGui::PushID(std::format("XMM{}", reg_num).c_str());
+
+        ImGui::Text("XMM%d: ", reg_num);
+
+        ImGui::BeginDisabled(!reg.do_override);
+
+
+
+        ImGui::EndDisabled();
+
+        if (reg.do_override)
+        {
+            
+        }
+
+        ImGui::BeginDisabled(is_hook_enabled && !reg.do_override);
+        ImGui::SameLine();
+        ImGui::Checkbox("Override", &reg.do_override);
+        ImGui::EndDisabled();
+
+        ImGui::PopID();
+	}
+
 	void draw(midhook_wrapper& hook)
 	{
         ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
@@ -213,9 +238,7 @@ namespace gui::midhook::live
             ImGui::SameLine();
             ImGui::Text("Hits: %d", hook.hit_amount);
 
-#if SAFETYHOOK_ARCH_X86_64
-    //TODO x64
-#else
+#if SAFETYHOOK_ARCH_X86_32
             draw_register_and_offsets("EAX", hook.live_context["EAX"], hook.hook.enabled());
             draw_register_and_offsets("ECX", hook.live_context["ECX"], hook.hook.enabled());
             draw_register_and_offsets("EDX", hook.live_context["EDX"], hook.hook.enabled());
@@ -225,7 +248,18 @@ namespace gui::midhook::live
             draw_register_and_offsets("EBP", hook.live_context["EBP"], hook.hook.enabled());
             draw_register_and_offsets("ESP", hook.live_context["ESP"], hook.hook.enabled());
             draw_register_and_offsets("EIP", hook.live_context["EIP"], hook.hook.enabled());
+			draw_xmm_register(0, hook.live_xmm_context[0], hook.hook.enabled());
+            draw_xmm_register(1, hook.live_xmm_context[1], hook.hook.enabled());
+            draw_xmm_register(2, hook.live_xmm_context[2], hook.hook.enabled());
+            draw_xmm_register(3, hook.live_xmm_context[3], hook.hook.enabled());
+            draw_xmm_register(4, hook.live_xmm_context[4], hook.hook.enabled());
+            draw_xmm_register(5, hook.live_xmm_context[5], hook.hook.enabled());
+            draw_xmm_register(6, hook.live_xmm_context[6], hook.hook.enabled());
+			draw_xmm_register(7, hook.live_xmm_context[7], hook.hook.enabled());
+#elif SAFETYHOOK_ARCH_X86_64
+            // TODO
 #endif
+
 		}
 		ImGui::End();
 	}

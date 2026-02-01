@@ -98,6 +98,7 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     last_hit_time = std::chrono::steady_clock::now();
     hit_amount++;
 
+#if SAFETYHOOK_ARCH_X86_32
     live_context["EAX"].value = ctx.eax;
     live_context["ECX"].value = ctx.ecx;
     live_context["EDX"].value = ctx.edx;
@@ -107,7 +108,32 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     live_context["EBP"].value = ctx.ebp;
     live_context["ESP"].value = ctx.esp;
     live_context["EIP"].value = ctx.eip;
+#elif SAFETYHOOK_ARCH_X86_64
+    // TODO
+#endif
 
+
+    live_xmm_context[0].value = ctx.xmm0;
+    live_xmm_context[1].value = ctx.xmm1;
+    live_xmm_context[2].value = ctx.xmm2;
+    live_xmm_context[3].value = ctx.xmm3;
+    live_xmm_context[4].value = ctx.xmm4;
+    live_xmm_context[5].value = ctx.xmm5;
+    live_xmm_context[6].value = ctx.xmm6;
+    live_xmm_context[7].value = ctx.xmm7;
+#if SAFETYHOOK_ARCH_X86_64
+    live_xmm_context[8].value = ctx.xmm8;
+    live_xmm_context[9].value = ctx.xmm9;
+    live_xmm_context[10].value = ctx.xmm10;
+    live_xmm_context[11].value = ctx.xmm11;
+    live_xmm_context[12].value = ctx.xmm12;
+    live_xmm_context[13].value = ctx.xmm13;
+    live_xmm_context[14].value = ctx.xmm14;
+    live_xmm_context[15].value = ctx.xmm15;
+#endif
+	
+
+#if SAFETYHOOK_ARCH_X86_32
     ctx.eax = live_context["EAX"].do_override ? live_context["EAX"].override_value : ctx.eax;
     ctx.ecx = live_context["ECX"].do_override ? live_context["ECX"].override_value : ctx.ecx;
     ctx.edx = live_context["EDX"].do_override ? live_context["EDX"].override_value : ctx.edx;
@@ -117,9 +143,13 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     ctx.ebp = live_context["EBP"].do_override ? live_context["EBP"].override_value : ctx.ebp;
     ctx.trampoline_esp = live_context["ESP"].do_override ? live_context["ESP"].override_value : ctx.trampoline_esp;
     ctx.eip = live_context["EIP"].do_override ? live_context["EIP"].override_value : ctx.eip;
+#elif SAFETYHOOK_ARCH_X86_64
+    // TODO
+#endif
 
     if (show_live_window)
     {
+#if SAFETYHOOK_ARCH_X86_32
         live_context["EAX"].report = pointer_analysis::analyze_pointer(ctx.eax);
         live_context["ECX"].report = pointer_analysis::analyze_pointer(ctx.ecx);
         live_context["EDX"].report = pointer_analysis::analyze_pointer(ctx.edx);
@@ -129,8 +159,12 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
         live_context["EBP"].report = pointer_analysis::analyze_pointer(ctx.ebp);
         live_context["ESP"].report = pointer_analysis::analyze_pointer(ctx.esp);
         // EIP is trampoline address no need to analyze
+#elif SAFETYHOOK_ARCH_X86_64
+        // TODO
+#endif
     }
 
+#if SAFETYHOOK_ARCH_X86_32
     handle_offsets("EAX", ctx.eax);
     handle_offsets("ECX", ctx.ecx);
     handle_offsets("EDX", ctx.edx);
@@ -140,6 +174,9 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     handle_offsets("EBP", ctx.ebp);
     handle_offsets("ESP", ctx.esp);
     handle_offsets("EIP", ctx.esp);
+#elif SAFETYHOOK_ARCH_X86_64
+// TODO
+#endif
 }
 
 void midhook_wrapper::trampoline(SafetyHookContext& ctx)

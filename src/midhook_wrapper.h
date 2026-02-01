@@ -2,7 +2,7 @@
 #include <chrono>
 #include <safetyhook.hpp>
 #include <pointer_analysis.h>
-
+#include <array>
 
 class midhook_wrapper
 {
@@ -35,7 +35,19 @@ public:
         std::vector<std::pair<int, offset_register_definition>> offset_definitions;
     };
 
+    struct xmm_register_definition
+    {
+        safetyhook::Xmm value{};
+        bool do_override = false;
+        safetyhook::Xmm override_value{};
+    };
+
     std::unordered_map<const char*, register_definition> live_context;
+#if SAFETYHOOK_ARCH_X86_32
+    std::array<xmm_register_definition, 8> live_xmm_context;
+#elif SAFETYHOOK_ARCH_X86_64
+    std::array<xmm_register_definition, 16> live_xmm_context;
+#endif
 
     inline const safetyhook::Allocation& get_trampoline() const;
 private:
