@@ -189,22 +189,23 @@ namespace gui::midhook::live
 
         ImGui::BeginDisabled(!reg.do_override);
 
-
+        ImGui::PushItemWidth(150);
+        ImGui::SameLine();
+        ImGui::InputFloat("##f0", ((reg.do_override ? reg.override_value : reg.value).f32), 1.0f, 10.0f, "%.6f");
+        ImGui::SameLine();
+        ImGui::InputDouble("##d0", ((reg.do_override ? reg.override_value : reg.value).f64), 1.0, 10.0, "%.6f");
+        ImGui::PopItemWidth();
 
         ImGui::EndDisabled();
 
-        if (reg.do_override)
-        {
-            
-        }
-
+        ImGui::EndDisabled();
         ImGui::BeginDisabled(is_hook_enabled && !reg.do_override);
         ImGui::SameLine();
         ImGui::Checkbox("Override", &reg.do_override);
         ImGui::EndDisabled();
 
         ImGui::PopID();
-	}
+    }
 
 	void draw(midhook_wrapper& hook)
 	{

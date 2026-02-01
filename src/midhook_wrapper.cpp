@@ -113,6 +113,7 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
 #endif
 
 
+
     live_xmm_context[0].value = ctx.xmm0;
     live_xmm_context[1].value = ctx.xmm1;
     live_xmm_context[2].value = ctx.xmm2;
@@ -121,6 +122,14 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     live_xmm_context[5].value = ctx.xmm5;
     live_xmm_context[6].value = ctx.xmm6;
     live_xmm_context[7].value = ctx.xmm7;
+    ctx.xmm0 = live_xmm_context[0].do_override ? live_xmm_context[0].override_value : ctx.xmm0;
+    ctx.xmm1 = live_xmm_context[1].do_override ? live_xmm_context[1].override_value : ctx.xmm1;
+    ctx.xmm2 = live_xmm_context[2].do_override ? live_xmm_context[2].override_value : ctx.xmm2;
+    ctx.xmm3 = live_xmm_context[3].do_override ? live_xmm_context[3].override_value : ctx.xmm3;
+    ctx.xmm4 = live_xmm_context[4].do_override ? live_xmm_context[4].override_value : ctx.xmm4;
+    ctx.xmm5 = live_xmm_context[5].do_override ? live_xmm_context[5].override_value : ctx.xmm5;
+    ctx.xmm6 = live_xmm_context[6].do_override ? live_xmm_context[6].override_value : ctx.xmm6;
+    ctx.xmm7 = live_xmm_context[7].do_override ? live_xmm_context[7].override_value : ctx.xmm7;
 #if SAFETYHOOK_ARCH_X86_64
     live_xmm_context[8].value = ctx.xmm8;
     live_xmm_context[9].value = ctx.xmm9;
@@ -131,7 +140,7 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     live_xmm_context[14].value = ctx.xmm14;
     live_xmm_context[15].value = ctx.xmm15;
 #endif
-	
+
 
 #if SAFETYHOOK_ARCH_X86_32
     ctx.eax = live_context["EAX"].do_override ? live_context["EAX"].override_value : ctx.eax;
@@ -175,7 +184,7 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     handle_offsets("ESP", ctx.esp);
     handle_offsets("EIP", ctx.esp);
 #elif SAFETYHOOK_ARCH_X86_64
-// TODO
+    // TODO
 #endif
 }
 
