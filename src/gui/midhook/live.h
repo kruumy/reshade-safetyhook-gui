@@ -17,11 +17,7 @@ namespace gui::midhook::live
         ss << std::hex << std::uppercase;
 
         ss << " -> ";
-
-        if (report.as_uintptr.has_value())
-        {
-            ss << "0x" << report.as_uintptr.value() << "  ";
-        }
+        ss << "0x" << report.as_uintptr.value() << "  "; // no need to check has_value as is_readable_ptr() does
 
         if (report.as_float.has_value())
         {
@@ -44,7 +40,7 @@ namespace gui::midhook::live
         ImGui::PopID();
     }
 
-    void draw_register(const std::string& name, midhook_wrapper::offset_register_definition& reg, bool is_hook_enabled)
+    void draw_control_register(const std::string& name, midhook_wrapper::control_register_definition& reg, bool is_hook_enabled)
     {
         ImGui::PushID(name.c_str());
 
@@ -81,9 +77,15 @@ namespace gui::midhook::live
         ImGui::Checkbox("Override", &reg.do_override);
         ImGui::EndDisabled();
 
-        draw_analysis(reg.report);
-
         ImGui::PopID();
+    }
+
+    void draw_register(const std::string& name, midhook_wrapper::offset_register_definition& reg, bool is_hook_enabled)
+    {
+        draw_control_register(name, reg, is_hook_enabled);
+        ImGui::PushID(name.c_str());
+        draw_analysis(reg.report);
+		ImGui::PopID();
     }
 
     bool draw_offset(const std::string& name, bool is_hook_enabled, size_t i, std::vector<std::pair<int, midhook_wrapper::offset_register_definition>>& offset_definitions)
@@ -147,7 +149,7 @@ namespace gui::midhook::live
         return true;
     }
 
-    void draw_offsets(const std::string& name, midhook_wrapper::register_definition& reg, bool is_hook_enabled)
+    void draw_offsets(const std::string& name, midhook_wrapper::general_purpose_register_definition& reg, bool is_hook_enabled)
     {
         constexpr float INDENT = 32.0f;
 
@@ -175,7 +177,7 @@ namespace gui::midhook::live
         ImGui::PopID();
     }
 
-    void draw_register_and_offsets(const std::string& name, midhook_wrapper::register_definition& reg, bool is_hook_enabled)
+    void draw_register_and_offsets(const std::string& name, midhook_wrapper::general_purpose_register_definition& reg, bool is_hook_enabled)
     {
         ImGui::Separator();
         draw_register(name, reg, is_hook_enabled);
@@ -262,8 +264,8 @@ namespace gui::midhook::live
             {
                 if (auto ret_location = memory_utils::find_next_mnemonic(hook.hook.target_address(), ZYDIS_MNEMONIC_RET))
                 {
-                    hook.live_context["EIP"].override_value = ret_location;
-                    hook.live_context["EIP"].do_override = true;
+                    hook.live_control_context[midhook_wrapper::control_register::EIP].override_value = ret_location;
+                    hook.live_control_context[midhook_wrapper::control_register::EIP].do_override = true;
                 }
                 else
                 {
@@ -276,15 +278,16 @@ namespace gui::midhook::live
             ImGui::Text("Hits: %d", hook.hit_amount);
 
 #if SAFETYHOOK_ARCH_X86_32
-            draw_register_and_offsets("EAX", hook.live_context["EAX"], hook.hook.enabled());
-            draw_register_and_offsets("ECX", hook.live_context["ECX"], hook.hook.enabled());
-            draw_register_and_offsets("EDX", hook.live_context["EDX"], hook.hook.enabled());
-            draw_register_and_offsets("EBX", hook.live_context["EBX"], hook.hook.enabled());
-            draw_register_and_offsets("ESI", hook.live_context["ESI"], hook.hook.enabled());
-            draw_register_and_offsets("EDI", hook.live_context["EDI"], hook.hook.enabled());
-            draw_register_and_offsets("EBP", hook.live_context["EBP"], hook.hook.enabled());
-            draw_register_and_offsets("ESP", hook.live_context["ESP"], hook.hook.enabled());
-            draw_register_and_offsets("EIP", hook.live_context["EIP"], hook.hook.enabled());
+            draw_register_and_offsets("EAX", hook.live_context[midhook_wrapper::general_purpose_register::EAX], hook.hook.enabled());
+            draw_register_and_offsets("ECX", hook.live_context[midhook_wrapper::general_purpose_register::ECX], hook.hook.enabled());
+            draw_register_and_offsets("EDX", hook.live_context[midhook_wrapper::general_purpose_register::EDX], hook.hook.enabled());
+            draw_register_and_offsets("EBX", hook.live_context[midhook_wrapper::general_purpose_register::EBX], hook.hook.enabled());
+            draw_register_and_offsets("ESI", hook.live_context[midhook_wrapper::general_purpose_register::ESI], hook.hook.enabled());
+            draw_register_and_offsets("EDI", hook.live_context[midhook_wrapper::general_purpose_register::EDI], hook.hook.enabled());
+            draw_register_and_offsets("EBP", hook.live_context[midhook_wrapper::general_purpose_register::EBP], hook.hook.enabled());
+            draw_register_and_offsets("ESP", hook.live_context[midhook_wrapper::general_purpose_register::ESP], hook.hook.enabled());
+            draw_control_register("EIP", hook.live_control_context[midhook_wrapper::control_register::EIP], hook.hook.enabled());
+            draw_control_register("EFLAGS", hook.live_control_context[midhook_wrapper::control_register::EFLAGS], hook.hook.enabled());
 #elif SAFETYHOOK_ARCH_X86_64
             // TODO
 #endif
