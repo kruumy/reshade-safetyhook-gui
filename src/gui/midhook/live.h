@@ -284,17 +284,18 @@ namespace gui::midhook::live
             draw_register_and_offsets("EBP", hook.live_context["EBP"], hook.hook.enabled());
             draw_register_and_offsets("ESP", hook.live_context["ESP"], hook.hook.enabled());
             draw_register_and_offsets("EIP", hook.live_context["EIP"], hook.hook.enabled());
-
+#elif SAFETYHOOK_ARCH_X86_64
+            // TODO
+#endif
             ImGui::Separator();
-
-            if (ImGui::BeginTable("xmm_registers", 2)) 
+            if (ImGui::BeginTable("xmm_registers", 2))
             {
                 for (size_t i = 0; i < hook.live_xmm_context.size(); i += 2)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     draw_xmm_register(i, hook.live_xmm_context[i], hook.hook.enabled());
-                    if (i + 1 < hook.live_xmm_context.size()) 
+                    if (i + 1 < hook.live_xmm_context.size())
                     {
                         ImGui::TableSetColumnIndex(1);
                         draw_xmm_register(i + 1, hook.live_xmm_context[i + 1], hook.hook.enabled());
@@ -302,10 +303,6 @@ namespace gui::midhook::live
                 }
                 ImGui::EndTable();
             }
-#elif SAFETYHOOK_ARCH_X86_64
-            // TODO
-#endif
-
 		}
 		ImGui::End();
 	}
