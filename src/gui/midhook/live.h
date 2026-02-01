@@ -285,14 +285,23 @@ namespace gui::midhook::live
             draw_register_and_offsets("ESP", hook.live_context["ESP"], hook.hook.enabled());
             draw_register_and_offsets("EIP", hook.live_context["EIP"], hook.hook.enabled());
 
-			draw_xmm_register(0, hook.live_xmm_context[0], hook.hook.enabled());
-            draw_xmm_register(1, hook.live_xmm_context[1], hook.hook.enabled());
-            draw_xmm_register(2, hook.live_xmm_context[2], hook.hook.enabled());
-            draw_xmm_register(3, hook.live_xmm_context[3], hook.hook.enabled());
-            draw_xmm_register(4, hook.live_xmm_context[4], hook.hook.enabled());
-            draw_xmm_register(5, hook.live_xmm_context[5], hook.hook.enabled());
-            draw_xmm_register(6, hook.live_xmm_context[6], hook.hook.enabled());
-			draw_xmm_register(7, hook.live_xmm_context[7], hook.hook.enabled());
+            ImGui::Separator();
+
+            if (ImGui::BeginTable("xmm_registers", 2)) 
+            {
+                for (size_t i = 0; i < hook.live_xmm_context.size(); i += 2)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    draw_xmm_register(i, hook.live_xmm_context[i], hook.hook.enabled());
+                    if (i + 1 < hook.live_xmm_context.size()) 
+                    {
+                        ImGui::TableSetColumnIndex(1);
+                        draw_xmm_register(i + 1, hook.live_xmm_context[i + 1], hook.hook.enabled());
+                    }
+                }
+                ImGui::EndTable();
+            }
 #elif SAFETYHOOK_ARCH_X86_64
             // TODO
 #endif
