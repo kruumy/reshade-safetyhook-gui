@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "memory_utils.h"
+#include <inttypes.h>
 
 namespace gui::midhook::live
 {
@@ -185,20 +186,54 @@ namespace gui::midhook::live
     {
         ImGui::PushID(std::format("XMM{}", reg_num).c_str());
 
-        ImGui::Text("XMM%d: ", reg_num);
+        std::string label = std::format("XMM{}: ", reg_num);
+        ImGui::Text(label.c_str());
 
         ImGui::BeginDisabled(!reg.do_override);
+		
+        size_t xmm_raw_byte_width = ImGui::CalcTextSize("FFFFFFFFFFFFFFFF  FFFFFFFFFFFFFFFF").x;
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(xmm_raw_byte_width);
+        safetyhook::Xmm* xmm = reg.do_override ? &reg.override_value : &reg.value;
+        char hex_buffer[sizeof(safetyhook::Xmm) * 2 + 1/*space*/ + 1/*null term*/] = {0};
+        std::snprintf(hex_buffer, sizeof(hex_buffer), "%016" PRIX64 " %016" PRIX64, xmm->u64[0], xmm->u64[1]);
+        if (ImGui::InputText("##xmm_bytes", hex_buffer, sizeof(hex_buffer), ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase))
+        {
+            std::istringstream iss(hex_buffer);
+            std::string token;
+            size_t idx = 0;
+            while (iss >> token && idx < 2) 
+            {
+                try 
+                {
+                    uint64_t val = std::stoull(token, nullptr, 16);
+                    xmm->u64[idx++] = val;
+                }
+                catch (...) {}
+            }
+        }
 
-        ImGui::PushItemWidth(150);
-        ImGui::SameLine();
-        ImGui::InputFloat("##f0", ((reg.do_override ? reg.override_value : reg.value).f32), 1.0f, 10.0f, "%.6f");
-        ImGui::SameLine();
-        ImGui::InputDouble("##d0", ((reg.do_override ? reg.override_value : reg.value).f64), 1.0, 10.0, "%.6f");
-        ImGui::PopItemWidth();
+		ImGui::Indent(ImGui::CalcTextSize(label.c_str()).x);
+		ImGui::Dummy(ImVec2(0.0f, 0.0f));
+        for (size_t k = 0; k < 4; k++)
+        {
+			size_t i = (k / 2 * 2) + (1 - k % 2); // 1,0,3,2 order
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(xmm_raw_byte_width / static_cast<float>(4));
+            ImGui::DragFloat(("##f" + std::to_string(i)).c_str(), &((reg.do_override ? reg.override_value : reg.value).f32[i]), 1.0f, 0.0f, 0.0f, "%.3f");
+        }
+
+        ImGui::Dummy(ImVec2(0.0f, 0.0f));
+        for (size_t i = 0; i < 2; i++)
+        {
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(xmm_raw_byte_width / static_cast<float>(2));
+            ImGui::InputDouble(("##d" + std::to_string(i)).c_str(), &((reg.do_override ? reg.override_value : reg.value).f64[i]), 1.0, 10.0, "%.6f");
+		}
+        ImGui::Unindent(ImGui::CalcTextSize(label.c_str()).x);
 
         ImGui::EndDisabled();
 
-        ImGui::EndDisabled();
         ImGui::BeginDisabled(is_hook_enabled && !reg.do_override);
         ImGui::SameLine();
         ImGui::Checkbox("Override", &reg.do_override);
@@ -249,6 +284,7 @@ namespace gui::midhook::live
             draw_register_and_offsets("EBP", hook.live_context["EBP"], hook.hook.enabled());
             draw_register_and_offsets("ESP", hook.live_context["ESP"], hook.hook.enabled());
             draw_register_and_offsets("EIP", hook.live_context["EIP"], hook.hook.enabled());
+
 			draw_xmm_register(0, hook.live_xmm_context[0], hook.hook.enabled());
             draw_xmm_register(1, hook.live_xmm_context[1], hook.hook.enabled());
             draw_xmm_register(2, hook.live_xmm_context[2], hook.hook.enabled());
