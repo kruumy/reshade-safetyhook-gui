@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "memory_utils.h"
-#include <inttypes.h>
 
 namespace gui::midhook::live
 {
@@ -48,22 +47,10 @@ namespace gui::midhook::live
 
         ImGui::BeginDisabled(!reg.do_override);
 
-        std::string hex_str = std::format("0x{:0{}X}", reg.do_override ? reg.override_value : reg.value, sizeof(void*) * 2);
         ImGui::SameLine();
-        ImGui::SetNextItemWidth(ImGui::CalcTextSize(hex_str.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f);
-        ImGui::InputText("##", hex_str.data(), hex_str.capacity() + 1, reg.do_override ? 0 : ImGuiInputTextFlags_ReadOnly);
+        gui::utils::InputHex(reg.do_override ? reg.override_value : reg.value);
 
         ImGui::EndDisabled();
-        if (reg.do_override)
-        {
-            unsigned long long addr = 0;
-            try
-            {
-                addr = std::stoull(hex_str, nullptr, 16);
-            }
-            catch (...) {}
-            reg.override_value = addr;
-        }
 
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
         {
@@ -120,22 +107,11 @@ namespace gui::midhook::live
             ImGui::Text(" -> ");
 
             ImGui::BeginDisabled(!reg.second.do_override);
-            std::string hex_str = std::format("0x{:0{}X}", reg.second.do_override ? reg.second.override_value : reg.second.report.as_uintptr.value(), sizeof(void*) * 2);
+			
             ImGui::SameLine();
-            ImGui::SetNextItemWidth(ImGui::CalcTextSize(hex_str.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f);
-            ImGui::InputText("##", hex_str.data(), hex_str.capacity() + 1, reg.second.do_override ? 0 : ImGuiInputTextFlags_ReadOnly);
+            gui::utils::InputHex(reg.second.do_override ? reg.second.override_value : reg.second.value);
+             
             ImGui::EndDisabled();
-
-            if (reg.second.do_override)
-            {
-                unsigned long long addr = 0;
-                try
-                {
-                    addr = std::stoull(hex_str, nullptr, 16);
-                }
-                catch (...) {}
-                reg.second.override_value = addr;
-            }
 
             ImGui::BeginDisabled(is_hook_enabled && !reg.second.do_override);
             ImGui::SameLine();
@@ -193,38 +169,19 @@ namespace gui::midhook::live
 
         ImGui::BeginDisabled(!reg.do_override);
 		
-        size_t xmm_raw_byte_width = ImGui::CalcTextSize("FFFFFFFFFFFFFFFF  FFFFFFFFFFFFFFFF").x;
         ImGui::SameLine();
-        ImGui::SetNextItemWidth(xmm_raw_byte_width);
-        safetyhook::Xmm* xmm = reg.do_override ? &reg.override_value : &reg.value;
-        char hex_buffer[sizeof(safetyhook::Xmm) * 2 + 1/*space*/ + 1/*null term*/] = {0};
-        std::snprintf(hex_buffer, sizeof(hex_buffer), "%016" PRIX64 " %016" PRIX64, xmm->u64[0], xmm->u64[1]);
-        if (ImGui::InputText("##xmm_bytes", hex_buffer, sizeof(hex_buffer), ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase))
-        {
-            std::istringstream iss(hex_buffer);
-            std::string token;
-            size_t idx = 0;
-            while (iss >> token && idx < 2) 
-            {
-                try 
-                {
-                    uint64_t val = std::stoull(token, nullptr, 16);
-                    xmm->u64[idx++] = val;
-                }
-                catch (...) {}
-            }
-        }
+		gui::utils::InputHex(reg.do_override ? reg.override_value : reg.value);
+        float xmm_raw_byte_width =ImGui::GetItemRectSize().x;
 
 		ImGui::Indent(ImGui::CalcTextSize(label.c_str()).x);
 		ImGui::Dummy(ImVec2(0.0f, 0.0f));
 
-        auto draw_float = [&](size_t i) 
+        for (size_t i = 0; i < 4; i++)
         {
             ImGui::SameLine();
             ImGui::SetNextItemWidth(xmm_raw_byte_width / static_cast<float>(4));
             ImGui::DragFloat(("##f" + std::to_string(i)).c_str(), &((reg.do_override ? reg.override_value : reg.value).f32[i]), 1.0f, 0.0f, 0.0f, "%.3f");
-        };
-        draw_float(1); draw_float(0); draw_float(3); draw_float(2);
+        }
 
         ImGui::Dummy(ImVec2(0.0f, 0.0f));
         for (size_t i = 0; i < 2; i++)
@@ -250,7 +207,7 @@ namespace gui::midhook::live
         ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin(std::format("Live 0x{:X} View", hook.hook.target_address()).c_str(), &hook.show_live_window, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-            flash_row_background(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hook.last_hit_time).count());
+            gui::utils::flash_row_background(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hook.last_hit_time).count());
 
             bool enabled = hook.hook.enabled();
             if (ImGui::Checkbox("Enabled", &enabled))

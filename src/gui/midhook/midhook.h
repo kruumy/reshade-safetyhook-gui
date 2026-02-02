@@ -8,7 +8,7 @@ namespace gui::midhook
 	{
 		ImGui::PushID(&hook);
 
-		flash_row_background(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hook.last_hit_time).count());
+		gui::utils::flash_row_background(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hook.last_hit_time).count());
 
 		if (ImGui::Button("X"))
 		{
