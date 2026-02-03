@@ -260,6 +260,7 @@ namespace gui::midhook::live
             draw_register_and_offsets("RBP", hook.live_context[midhook_wrapper::general_purpose_register::RBP], hook.hook.enabled());
             draw_register_and_offsets("RSP", hook.live_context[midhook_wrapper::general_purpose_register::RSP], hook.hook.enabled());
 
+            draw_register_and_offsets("R8", hook.live_context[midhook_wrapper::general_purpose_register::R8], hook.hook.enabled());
             draw_register_and_offsets("R9", hook.live_context[midhook_wrapper::general_purpose_register::R9], hook.hook.enabled());
             draw_register_and_offsets("R10", hook.live_context[midhook_wrapper::general_purpose_register::R10], hook.hook.enabled());
             draw_register_and_offsets("R11", hook.live_context[midhook_wrapper::general_purpose_register::R11], hook.hook.enabled());
