@@ -134,7 +134,6 @@ namespace gui::midhook::live
 
         for (size_t i = 0; i < reg.offset_definitions.size();)
         {
-            
             if (draw_offset(name, is_hook_enabled, i, reg.offset_definitions))
             {
                 ++i;

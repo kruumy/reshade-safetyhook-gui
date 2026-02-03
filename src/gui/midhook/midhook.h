@@ -4,9 +4,9 @@
 
 namespace gui::midhook
 {
-	inline void draw_midhook_row(midhook_wrapper& hook, size_t index)
+	inline bool draw_midhook_row(midhook_wrapper& hook, size_t index)
 	{
-		ImGui::PushID(&hook);
+		ImGui::PushID(hook.hook.target_address());
 
 		gui::utils::flash_row_background(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hook.last_hit_time).count());
 
@@ -14,7 +14,7 @@ namespace gui::midhook
 		{
 			midhook_wrapper::midhooks.erase(midhook_wrapper::midhooks.begin() + index);
 			ImGui::PopID();
-			return;
+			return false;
 		}
 
 		ImGui::SameLine();
@@ -34,15 +34,16 @@ namespace gui::midhook
 			hook.show_live_window = !hook.show_live_window;
 		}
 
+		ImGui::SameLine();
+		ImGui::Text("Hits: %d", hook.hit_amount);
+
 		if (hook.show_live_window)
 		{
 			live::draw(hook);
 		}
 
-		ImGui::SameLine();
-		ImGui::Text("Hits: %d", hook.hit_amount);
-
 		ImGui::PopID();
+		return true;
 	}
 
 	void draw()
@@ -77,11 +78,14 @@ namespace gui::midhook
 			}
 		}
 
-		for (size_t i = 0; i < midhook_wrapper::midhooks.size(); ++i)
+		for (size_t i = 0; i < midhook_wrapper::midhooks.size();)
 		{
 			midhook_wrapper::midhooks[i]->on_imgui_render();
 			ImGui::Separator();
-			draw_midhook_row(*midhook_wrapper::midhooks[i], i);
+			if (draw_midhook_row(*midhook_wrapper::midhooks[i], i))
+			{
+				++i;
+			}
 		}
 
 		ImGui::PopID();
