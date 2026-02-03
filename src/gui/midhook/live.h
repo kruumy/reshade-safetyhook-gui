@@ -238,6 +238,8 @@ namespace gui::midhook::live
 
             ImGui::SameLine();
             ImGui::Text("Hits: %d", hook.hit_amount);
+            ImGui::SameLine();
+            ImGui::Text("| Analysis (performed per frame): %d", hook.analysis_count);
 
 #if SAFETYHOOK_ARCH_X86_32
             draw_register_and_offsets("EAX", hook.live_context[midhook_wrapper::general_purpose_register::EAX], hook.hook.enabled());

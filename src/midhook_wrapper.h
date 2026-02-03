@@ -3,6 +3,7 @@
 #include <safetyhook.hpp>
 #include <pointer_analysis.h>
 #include <array>
+#include <atomic>
 
 class midhook_wrapper
 {
@@ -79,6 +80,7 @@ public:
 
     std::chrono::steady_clock::time_point last_hit_time{};
     size_t hit_amount = 0;
+    size_t analysis_count = 0;
 
     bool show_live_window = false;
     
@@ -117,10 +119,14 @@ public:
     std::array<xmm_register_definition, xmm_register::xmm_COUNT> live_xmm_context;
 
     inline const safetyhook::Allocation& get_trampoline() const;
+    void on_imgui_render();
 private:
+    std::atomic<int> current_frame{ 0 };
+    std::atomic<int> last_frame{ -1 };
+    bool has_ran_this_frame();
     inline static std::unordered_map<uintptr_t, midhook_wrapper*> registry; // trampoline_address, this*
 
-    void handle_offsets(general_purpose_register name, const uintptr_t base_reg);
+    void handle_offsets(general_purpose_register name, const uintptr_t base_reg, bool do_analysis);
 
     void destination(SafetyHookContext& ctx);
     static void trampoline(SafetyHookContext& ctx);

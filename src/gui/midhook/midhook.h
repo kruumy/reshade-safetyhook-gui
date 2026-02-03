@@ -79,6 +79,7 @@ namespace gui::midhook
 
 		for (size_t i = 0; i < midhook_wrapper::midhooks.size(); ++i)
 		{
+			midhook_wrapper::midhooks[i]->on_imgui_render();
 			ImGui::Separator();
 			draw_midhook_row(*midhook_wrapper::midhooks[i], i);
 		}

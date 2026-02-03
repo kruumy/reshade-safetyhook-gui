@@ -1,4 +1,6 @@
 ﻿#include "midhook_wrapper.h"
+#include <imgui.h>
+#include <reshade.hpp>
 #include "memory_utils.h"
 #include "pointer_analysis.h"
 
@@ -30,6 +32,11 @@ inline const safetyhook::Allocation& midhook_wrapper::get_trampoline() const
     return (this->hook.*get(MidHookTag{})).trampoline();
 }
 
+void midhook_wrapper::on_imgui_render()
+{
+    current_frame.store(ImGui::GetFrameCount(), std::memory_order_relaxed);
+}
+
 std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
 {
     if (!memory_utils::is_executable_pointer(target))
@@ -55,7 +62,14 @@ std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
     return midhooks.emplace_back(std::make_shared<midhook_wrapper>(std::move(*internal_hook)));
 }
 
-void midhook_wrapper::handle_offsets(general_purpose_register name, const uintptr_t base_reg)
+bool midhook_wrapper::has_ran_this_frame()
+{
+    int frame = current_frame.load(std::memory_order_relaxed);
+    int prev = last_frame.exchange(frame, std::memory_order_relaxed);
+    return frame == prev;
+}
+
+void midhook_wrapper::handle_offsets(general_purpose_register name, const uintptr_t base_reg, bool do_analysis)
 {
     for (auto& item : live_context[name].offset_definitions)
     {
@@ -67,7 +81,7 @@ void midhook_wrapper::handle_offsets(general_purpose_register name, const uintpt
                 item.second.do_override = false;
             }
         }
-        if (show_live_window)
+        if (do_analysis)
         {
             item.second.report = pointer_analysis::analyze_pointer(item.second.value);
         }
@@ -78,6 +92,7 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
 {
     last_hit_time = std::chrono::steady_clock::now();
     hit_amount++;
+	bool do_analysis = show_live_window && !has_ran_this_frame();
 
 #if SAFETYHOOK_ARCH_X86_32
     live_context[general_purpose_register::EAX].value = ctx.eax;
@@ -99,8 +114,8 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     live_context[general_purpose_register::RDI].value = ctx.rdi;
     live_context[general_purpose_register::RBP].value = ctx.rbp;
     live_context[general_purpose_register::RSP].value = ctx.rsp;
-    live_context[general_purpose_register::R9].value = ctx.r9;
 	live_context[general_purpose_register::R8].value = ctx.r8;
+    live_context[general_purpose_register::R9].value = ctx.r9;
 	live_context[general_purpose_register::R10].value = ctx.r10;
 	live_context[general_purpose_register::R11].value = ctx.r11;
 	live_context[general_purpose_register::R12].value = ctx.r12;
@@ -179,8 +194,9 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
 	ctx.rflags = live_control_context[control_register::RFLAGS].do_override ? live_control_context[control_register::RFLAGS].override_value : ctx.rflags;
 #endif
 
-    if (show_live_window)
+    if (do_analysis)
     {
+		analysis_count++;
 #if SAFETYHOOK_ARCH_X86_32
         live_context[general_purpose_register::EAX].report = pointer_analysis::analyze_pointer(ctx.eax);
         live_context[general_purpose_register::ECX].report = pointer_analysis::analyze_pointer(ctx.ecx);
@@ -211,31 +227,31 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     }
 
 #if SAFETYHOOK_ARCH_X86_32
-    handle_offsets(general_purpose_register::EAX, ctx.eax);
-    handle_offsets(general_purpose_register::ECX, ctx.ecx);
-    handle_offsets(general_purpose_register::EDX, ctx.edx);
-    handle_offsets(general_purpose_register::EBX, ctx.ebx);
-    handle_offsets(general_purpose_register::ESI, ctx.esi);
-    handle_offsets(general_purpose_register::EDI, ctx.edi);
-    handle_offsets(general_purpose_register::EBP, ctx.ebp);
-    handle_offsets(general_purpose_register::ESP, ctx.esp);
+    handle_offsets(general_purpose_register::EAX, ctx.eax, do_analysis);
+    handle_offsets(general_purpose_register::ECX, ctx.ecx, do_analysis);
+    handle_offsets(general_purpose_register::EDX, ctx.edx, do_analysis);
+    handle_offsets(general_purpose_register::EBX, ctx.ebx, do_analysis);
+    handle_offsets(general_purpose_register::ESI, ctx.esi, do_analysis);
+    handle_offsets(general_purpose_register::EDI, ctx.edi, do_analysis);
+    handle_offsets(general_purpose_register::EBP, ctx.ebp, do_analysis);
+    handle_offsets(general_purpose_register::ESP, ctx.esp, do_analysis);
 #elif SAFETYHOOK_ARCH_X86_64
-    handle_offsets(general_purpose_register::RAX, ctx.rax);
-    handle_offsets(general_purpose_register::RCX, ctx.rcx);
-    handle_offsets(general_purpose_register::RDX, ctx.rdx);
-    handle_offsets(general_purpose_register::RBX, ctx.rbx);
-    handle_offsets(general_purpose_register::RSI, ctx.rsi);
-    handle_offsets(general_purpose_register::RDI, ctx.rdi);
-    handle_offsets(general_purpose_register::RBP, ctx.rbp);
-    handle_offsets(general_purpose_register::RSP, ctx.rsp);
-    handle_offsets(general_purpose_register::R8, ctx.r8);
-    handle_offsets(general_purpose_register::R9, ctx.r9);
-    handle_offsets(general_purpose_register::R10, ctx.r10);
-    handle_offsets(general_purpose_register::R11, ctx.r11);
-    handle_offsets(general_purpose_register::R12, ctx.r12);
-    handle_offsets(general_purpose_register::R13, ctx.r13);
-    handle_offsets(general_purpose_register::R14, ctx.r14);
-    handle_offsets(general_purpose_register::R15, ctx.r15);
+    handle_offsets(general_purpose_register::RAX, ctx.rax, do_analysis);
+    handle_offsets(general_purpose_register::RCX, ctx.rcx, do_analysis);
+    handle_offsets(general_purpose_register::RDX, ctx.rdx, do_analysis);
+    handle_offsets(general_purpose_register::RBX, ctx.rbx, do_analysis);
+    handle_offsets(general_purpose_register::RSI, ctx.rsi, do_analysis);
+    handle_offsets(general_purpose_register::RDI, ctx.rdi, do_analysis);
+    handle_offsets(general_purpose_register::RBP, ctx.rbp, do_analysis);
+    handle_offsets(general_purpose_register::RSP, ctx.rsp, do_analysis);
+    handle_offsets(general_purpose_register::R8, ctx.r8, do_analysis);
+    handle_offsets(general_purpose_register::R9, ctx.r9, do_analysis);
+    handle_offsets(general_purpose_register::R10, ctx.r10, do_analysis);
+    handle_offsets(general_purpose_register::R11, ctx.r11, do_analysis);
+    handle_offsets(general_purpose_register::R12, ctx.r12, do_analysis);
+    handle_offsets(general_purpose_register::R13, ctx.r13, do_analysis);
+    handle_offsets(general_purpose_register::R14, ctx.r14, do_analysis);
+    handle_offsets(general_purpose_register::R15, ctx.r15, do_analysis);
 #endif
 }
 
