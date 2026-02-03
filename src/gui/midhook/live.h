@@ -259,6 +259,14 @@ namespace gui::midhook::live
             draw_register_and_offsets("RDI", hook.live_context[midhook_wrapper::general_purpose_register::RDI], hook.hook.enabled());
             draw_register_and_offsets("RBP", hook.live_context[midhook_wrapper::general_purpose_register::RBP], hook.hook.enabled());
             draw_register_and_offsets("RSP", hook.live_context[midhook_wrapper::general_purpose_register::RSP], hook.hook.enabled());
+
+            draw_register_and_offsets("R9", hook.live_context[midhook_wrapper::general_purpose_register::R9], hook.hook.enabled());
+            draw_register_and_offsets("R10", hook.live_context[midhook_wrapper::general_purpose_register::R10], hook.hook.enabled());
+            draw_register_and_offsets("R11", hook.live_context[midhook_wrapper::general_purpose_register::R11], hook.hook.enabled());
+            draw_register_and_offsets("R12", hook.live_context[midhook_wrapper::general_purpose_register::R12], hook.hook.enabled());
+            draw_register_and_offsets("R13", hook.live_context[midhook_wrapper::general_purpose_register::R13], hook.hook.enabled());
+            draw_register_and_offsets("R14", hook.live_context[midhook_wrapper::general_purpose_register::R14], hook.hook.enabled());
+            draw_register_and_offsets("R15", hook.live_context[midhook_wrapper::general_purpose_register::R15], hook.hook.enabled());
             draw_control_register("RIP", hook.live_control_context[midhook_wrapper::control_register::RIP], hook.hook.enabled());
             draw_control_register("RFLAGS", hook.live_control_context[midhook_wrapper::control_register::RFLAGS], hook.hook.enabled());
 #endif
