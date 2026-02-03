@@ -221,8 +221,13 @@ namespace gui::midhook::live
             {
                 if (auto ret_location = memory_utils::find_next_mnemonic(hook.hook.target_address(), ZYDIS_MNEMONIC_RET))
                 {
+#if SAFETYHOOK_ARCH_X86_32
                     hook.live_control_context[midhook_wrapper::control_register::EIP].override_value = ret_location;
                     hook.live_control_context[midhook_wrapper::control_register::EIP].do_override = true;
+#elif SAFETYHOOK_ARCH_X86_64
+                    hook.live_control_context[midhook_wrapper::control_register::RIP].override_value = ret_location;
+                    hook.live_control_context[midhook_wrapper::control_register::RIP].do_override = true;
+#endif
                 }
                 else
                 {
@@ -246,7 +251,16 @@ namespace gui::midhook::live
             draw_control_register("EIP", hook.live_control_context[midhook_wrapper::control_register::EIP], hook.hook.enabled());
             draw_control_register("EFLAGS", hook.live_control_context[midhook_wrapper::control_register::EFLAGS], hook.hook.enabled());
 #elif SAFETYHOOK_ARCH_X86_64
-            // TODO
+            draw_register_and_offsets("RAX", hook.live_context[midhook_wrapper::general_purpose_register::RAX], hook.hook.enabled());
+            draw_register_and_offsets("RCX", hook.live_context[midhook_wrapper::general_purpose_register::RCX], hook.hook.enabled());
+            draw_register_and_offsets("RDX", hook.live_context[midhook_wrapper::general_purpose_register::RDX], hook.hook.enabled());
+            draw_register_and_offsets("RBX", hook.live_context[midhook_wrapper::general_purpose_register::RBX], hook.hook.enabled());
+            draw_register_and_offsets("RSI", hook.live_context[midhook_wrapper::general_purpose_register::RSI], hook.hook.enabled());
+            draw_register_and_offsets("RDI", hook.live_context[midhook_wrapper::general_purpose_register::RDI], hook.hook.enabled());
+            draw_register_and_offsets("RBP", hook.live_context[midhook_wrapper::general_purpose_register::RBP], hook.hook.enabled());
+            draw_register_and_offsets("RSP", hook.live_context[midhook_wrapper::general_purpose_register::RSP], hook.hook.enabled());
+            draw_control_register("RIP", hook.live_control_context[midhook_wrapper::control_register::RIP], hook.hook.enabled());
+            draw_control_register("RFLAGS", hook.live_control_context[midhook_wrapper::control_register::RFLAGS], hook.hook.enabled());
 #endif
             ImGui::Separator();
             if (ImGui::BeginTable("xmm_registers", 2))

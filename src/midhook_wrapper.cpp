@@ -91,7 +91,24 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
 	live_control_context[control_register::EIP].value = ctx.eip;
 	live_control_context[control_register::EFLAGS].value = ctx.eflags;
 #elif SAFETYHOOK_ARCH_X86_64
-    // TODO
+    live_context[general_purpose_register::RAX].value = ctx.rax;
+    live_context[general_purpose_register::RCX].value = ctx.rcx;
+    live_context[general_purpose_register::RDX].value = ctx.rdx;
+    live_context[general_purpose_register::RBX].value = ctx.rbx;
+    live_context[general_purpose_register::RSI].value = ctx.rsi;
+    live_context[general_purpose_register::RDI].value = ctx.rdi;
+    live_context[general_purpose_register::RBP].value = ctx.rbp;
+    live_context[general_purpose_register::RSP].value = ctx.rsp;
+    live_context[general_purpose_register::R9].value = ctx.r9;
+	live_context[general_purpose_register::R8].value = ctx.r8;
+	live_context[general_purpose_register::R10].value = ctx.r10;
+	live_context[general_purpose_register::R11].value = ctx.r11;
+	live_context[general_purpose_register::R12].value = ctx.r12;
+	live_context[general_purpose_register::R13].value = ctx.r13;
+	live_context[general_purpose_register::R14].value = ctx.r14;
+	live_context[general_purpose_register::R15].value = ctx.r15;
+    live_control_context[control_register::RIP].value = ctx.rip;
+    live_control_context[control_register::RFLAGS].value = ctx.rflags;
 #endif
 
 
@@ -142,7 +159,24 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     ctx.eip = live_control_context[control_register::EIP].do_override ? live_control_context[control_register::EIP].override_value : ctx.eip;
     ctx.eflags = live_control_context[control_register::EFLAGS].do_override ? live_control_context[control_register::EFLAGS].override_value : ctx.eflags;
 #elif SAFETYHOOK_ARCH_X86_64
-    // TODO
+    ctx.rax = live_context[general_purpose_register::RAX].do_override ? live_context[general_purpose_register::RAX].override_value : ctx.rax;
+	ctx.rcx = live_context[general_purpose_register::RCX].do_override ? live_context[general_purpose_register::RCX].override_value : ctx.rcx;
+	ctx.rdx = live_context[general_purpose_register::RDX].do_override ? live_context[general_purpose_register::RDX].override_value : ctx.rdx;
+	ctx.rbx = live_context[general_purpose_register::RBX].do_override ? live_context[general_purpose_register::RBX].override_value : ctx.rbx;
+	ctx.rsi = live_context[general_purpose_register::RSI].do_override ? live_context[general_purpose_register::RSI].override_value : ctx.rsi;
+	ctx.rdi = live_context[general_purpose_register::RDI].do_override ? live_context[general_purpose_register::RDI].override_value : ctx.rdi;
+	ctx.rbp = live_context[general_purpose_register::RBP].do_override ? live_context[general_purpose_register::RBP].override_value : ctx.rbp;
+	ctx.rsp = live_context[general_purpose_register::RSP].do_override ? live_context[general_purpose_register::RSP].override_value : ctx.rsp;
+    ctx.r8 = live_context[general_purpose_register::R8].do_override ? live_context[general_purpose_register::R8].override_value : ctx.r8;
+    ctx.r9 = live_context[general_purpose_register::R9].do_override ? live_context[general_purpose_register::R9].override_value : ctx.r9;
+    ctx.r10 = live_context[general_purpose_register::R10].do_override ? live_context[general_purpose_register::R10].override_value : ctx.r10;
+    ctx.r11 = live_context[general_purpose_register::R11].do_override ? live_context[general_purpose_register::R11].override_value : ctx.r11;
+    ctx.r12 = live_context[general_purpose_register::R12].do_override ? live_context[general_purpose_register::R12].override_value : ctx.r12;
+    ctx.r13 = live_context[general_purpose_register::R13].do_override ? live_context[general_purpose_register::R13].override_value : ctx.r13;
+    ctx.r14 = live_context[general_purpose_register::R14].do_override ? live_context[general_purpose_register::R14].override_value : ctx.r14;
+    ctx.r15 = live_context[general_purpose_register::R15].do_override ? live_context[general_purpose_register::R15].override_value : ctx.r15;
+    ctx.rip = live_control_context[control_register::RIP].do_override ? live_control_context[control_register::RIP].override_value : ctx.rip;
+	ctx.rflags = live_control_context[control_register::RFLAGS].do_override ? live_control_context[control_register::RFLAGS].override_value : ctx.rflags;
 #endif
 
     if (show_live_window)
@@ -157,7 +191,22 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
         live_context[general_purpose_register::EBP].report = pointer_analysis::analyze_pointer(ctx.ebp);
         live_context[general_purpose_register::ESP].report = pointer_analysis::analyze_pointer(ctx.esp);
 #elif SAFETYHOOK_ARCH_X86_64
-        // TODO
+        live_context[general_purpose_register::RAX].report = pointer_analysis::analyze_pointer(ctx.rax);
+        live_context[general_purpose_register::RCX].report = pointer_analysis::analyze_pointer(ctx.rcx);
+        live_context[general_purpose_register::RDX].report = pointer_analysis::analyze_pointer(ctx.rdx);
+        live_context[general_purpose_register::RBX].report = pointer_analysis::analyze_pointer(ctx.rbx);
+        live_context[general_purpose_register::RSI].report = pointer_analysis::analyze_pointer(ctx.rsi);
+        live_context[general_purpose_register::RDI].report = pointer_analysis::analyze_pointer(ctx.rdi);
+        live_context[general_purpose_register::RBP].report = pointer_analysis::analyze_pointer(ctx.rbp);
+        live_context[general_purpose_register::RSP].report = pointer_analysis::analyze_pointer(ctx.rsp);
+        live_context[general_purpose_register::R8].report = pointer_analysis::analyze_pointer(ctx.r8);
+        live_context[general_purpose_register::R9].report = pointer_analysis::analyze_pointer(ctx.r9);
+        live_context[general_purpose_register::R10].report = pointer_analysis::analyze_pointer(ctx.r10);
+        live_context[general_purpose_register::R11].report = pointer_analysis::analyze_pointer(ctx.r11);
+        live_context[general_purpose_register::R12].report = pointer_analysis::analyze_pointer(ctx.r12);
+        live_context[general_purpose_register::R13].report = pointer_analysis::analyze_pointer(ctx.r13);
+        live_context[general_purpose_register::R14].report = pointer_analysis::analyze_pointer(ctx.r14);
+        live_context[general_purpose_register::R15].report = pointer_analysis::analyze_pointer(ctx.r15);
 #endif
     }
 
@@ -171,7 +220,22 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
     handle_offsets(general_purpose_register::EBP, ctx.ebp);
     handle_offsets(general_purpose_register::ESP, ctx.esp);
 #elif SAFETYHOOK_ARCH_X86_64
-    // TODO
+    handle_offsets(general_purpose_register::RAX, ctx.rax);
+    handle_offsets(general_purpose_register::RCX, ctx.rcx);
+    handle_offsets(general_purpose_register::RDX, ctx.rdx);
+    handle_offsets(general_purpose_register::RBX, ctx.rbx);
+    handle_offsets(general_purpose_register::RSI, ctx.rsi);
+    handle_offsets(general_purpose_register::RDI, ctx.rdi);
+    handle_offsets(general_purpose_register::RBP, ctx.rbp);
+    handle_offsets(general_purpose_register::RSP, ctx.rsp);
+    handle_offsets(general_purpose_register::R8, ctx.r8);
+    handle_offsets(general_purpose_register::R9, ctx.r9);
+    handle_offsets(general_purpose_register::R10, ctx.r10);
+    handle_offsets(general_purpose_register::R11, ctx.r11);
+    handle_offsets(general_purpose_register::R12, ctx.r12);
+    handle_offsets(general_purpose_register::R13, ctx.r13);
+    handle_offsets(general_purpose_register::R14, ctx.r14);
+    handle_offsets(general_purpose_register::R15, ctx.r15);
 #endif
 }
 
