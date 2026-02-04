@@ -7,8 +7,9 @@ namespace gui::allocator
         {
             String,
             Int,
-            Float
-        };constexpr size_t AMOUNT_OF_TYPES = 3;
+            Float,
+            COUNT
+        };
 
         constexpr std::string_view to_string(type _type)
         {
@@ -88,7 +89,7 @@ namespace gui::allocator
         ImGui::PushItemWidth(100);
         if (ImGui::BeginCombo("##type_combo", data_type::to_string(current_type).data()))
         {
-            for (int i = 0; i < data_type::AMOUNT_OF_TYPES; ++i)
+            for (int i = 0; i < data_type::COUNT; ++i)
             {
                 data_type::type candidate = static_cast<data_type::type>(i);
                 bool is_selected = (candidate == current_type);
