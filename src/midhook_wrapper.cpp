@@ -91,7 +91,7 @@ void midhook_wrapper::handle_offsets(general_purpose_register name, const uintpt
 void midhook_wrapper::destination(SafetyHookContext& ctx)
 {
     last_hit_time = std::chrono::steady_clock::now();
-    hit_amount++;
+    hit_count++;
 	bool do_analysis = show_live_window && !has_ran_this_frame();
 
 #if SAFETYHOOK_ARCH_X86_32

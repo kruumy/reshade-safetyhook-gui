@@ -79,7 +79,7 @@ public:
     SafetyHookMid hook;
 
     std::chrono::steady_clock::time_point last_hit_time{};
-    size_t hit_amount = 0;
+    size_t hit_count = 0;
     size_t analysis_count = 0;
 
     bool show_live_window = false;

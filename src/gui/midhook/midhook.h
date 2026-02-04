@@ -35,7 +35,7 @@ namespace gui::midhook
 		}
 
 		ImGui::SameLine();
-		ImGui::Text("Hits: %d", hook.hit_amount);
+		ImGui::Text("Hits: %d", hook.hit_count);
 
 		if (hook.show_live_window)
 		{

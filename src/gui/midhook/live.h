@@ -236,7 +236,7 @@ namespace gui::midhook::live
             ImGui::EndDisabled();
 
             ImGui::SameLine();
-            ImGui::Text("Hits: %d", hook.hit_amount);
+            ImGui::Text("Hits: %d", hook.hit_count);
             ImGui::SameLine();
             ImGui::Text("| Analysis (performed per frame): %d", hook.analysis_count);
 
