@@ -14,7 +14,7 @@ namespace gui::midhook::live
         std::stringstream ss;
         ss << std::hex << std::uppercase;
 
-        ss << " -> ";
+        ss << "-> ";
         ss << "0x" << report.as_uintptr.value() << "  "; // no need to check has_value as is_readable_ptr() does
 
         if (report.as_float.has_value())
