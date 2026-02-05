@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "memory_utils.h"
-
 namespace gui::midhook::live
 {
     void draw_analysis(const pointer_analysis::report& report)
@@ -55,7 +54,24 @@ namespace gui::midhook::live
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
         {
             ImGui::BeginTooltip();
-            ImGui::Text("dec: %llu", static_cast<unsigned long long>(reg.value));
+
+            uintptr_t value = reg.do_override ? reg.override_value : reg.value;
+            ImGui::Text("Decimal: %llu", static_cast<unsigned long long>(value));
+
+            float f1;
+            std::memcpy(&f1, &value, sizeof (f1));
+            ImGui::Text("Float (low): %f", f1);
+
+#if SAFETYHOOK_ARCH_X86_64
+            float f2;
+            std::memcpy(&f2, reinterpret_cast<const std::byte*>(&value) + sizeof(float), sizeof(f2));
+            ImGui::Text("Float (high): %f", f2);
+
+            double d;
+            std::memcpy(&d, &value, sizeof(d));
+            ImGui::Text("Double: %lf", d);
+#endif
+
             ImGui::EndTooltip();
         }
 
