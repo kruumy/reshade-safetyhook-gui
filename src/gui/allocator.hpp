@@ -1,7 +1,6 @@
 #pragma once
 #include <imgui.h>
 #include <safetyhook.hpp>
-#include <string>
 #include <string_view>
 
 namespace gui::allocator
@@ -26,8 +25,9 @@ namespace gui::allocator
                 return "Int";
             case type::Float:
                 return "Float";
+            default:
+                return "";
             }
-            std::unreachable();
         }
     } // namespace data_type
     static inline std::vector<std::pair<data_type::type, safetyhook::Allocation>> allocations;
