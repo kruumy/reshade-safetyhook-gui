@@ -1,1 +1,351 @@
-#pragma once
+﻿#pragma once
+#include "../../memory_utils.hpp"
+#include "../../midhook_wrapper.hpp"
+#include "../../pointer_analysis.hpp"
+#include "../utils.hpp"
+#include <imgui.h>
+#include <sstream>
+
+namespace gui::midhook::live
+{
+    void draw_analysis(const pointer_analysis::report& report)
+    {
+        if (!report.is_readable_ptr())
+        {
+            return;
+        }
+
+        ImGui::PushID("ptr_analysis");
+
+        std::stringstream ss;
+        ss << std::hex << std::uppercase;
+
+        ss << "-> ";
+        ss << "0x" << report.as_uintptr.value() << "  "; // no need to check has_value as is_readable_ptr() does
+
+        if (report.as_float.has_value())
+        {
+            ss << "float(" << report.as_float.value() << ") ";
+        }
+
+        if (report.as_double.has_value())
+        {
+            ss << "double(" << report.as_double.value() << ") ";
+        }
+
+        if (!report.as_string.empty())
+        {
+            ss << "string(" << report.as_string << ") ";
+        }
+
+        ImGui::SameLine();
+        ImGui::Text("%s", ss.str().c_str());
+
+        ImGui::PopID();
+    }
+
+    void draw_control_register(const std::string& name, midhook_wrapper::control_register_definition& reg,
+                               bool is_hook_enabled)
+    {
+        ImGui::PushID(name.c_str());
+
+        ImGui::Text((name + ": ").c_str());
+
+        ImGui::BeginDisabled(!reg.do_override);
+
+        ImGui::SameLine();
+        gui::utils::InputHex(reg.do_override ? reg.override_value : reg.value);
+
+        ImGui::EndDisabled();
+
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+        {
+            ImGui::BeginTooltip();
+
+            uintptr_t value = reg.do_override ? reg.override_value : reg.value;
+            ImGui::Text("Decimal: %llu", static_cast<unsigned long long>(value));
+
+            float f1;
+            std::memcpy(&f1, &value, sizeof(f1));
+            ImGui::Text("Float (low): %f", f1);
+
+#if SAFETYHOOK_ARCH_X86_64
+            float f2;
+            std::memcpy(&f2, reinterpret_cast<const std::byte*>(&value) + sizeof(float), sizeof(f2));
+            ImGui::Text("Float (high): %f", f2);
+
+            double d;
+            std::memcpy(&d, &value, sizeof(d));
+            ImGui::Text("Double: %lf", d);
+#endif
+
+            ImGui::EndTooltip();
+        }
+
+        ImGui::BeginDisabled(is_hook_enabled && !reg.do_override);
+        ImGui::SameLine();
+        ImGui::Checkbox("Override", &reg.do_override);
+        ImGui::EndDisabled();
+
+        ImGui::PopID();
+    }
+
+    void draw_register(const std::string& name, midhook_wrapper::offset_register_definition& reg, bool is_hook_enabled)
+    {
+        draw_control_register(name, reg, is_hook_enabled);
+        ImGui::PushID(name.c_str());
+        draw_analysis(reg.report);
+        ImGui::PopID();
+    }
+
+    bool draw_offset(const std::string& name, bool is_hook_enabled, size_t i,
+                     std::vector<std::pair<int, midhook_wrapper::offset_register_definition>>& offset_definitions)
+    {
+        ImGui::PushID(static_cast<int>(i));
+        auto& reg = offset_definitions[i];
+
+        if (ImGui::Button("-"))
+        {
+            offset_definitions.erase(offset_definitions.begin() + i);
+            ImGui::PopID();
+            return false;
+        }
+
+        ImGui::SameLine();
+        ImGui::Text((name + " +").c_str());
+
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(75);
+        ImGui::InputInt(("##offset_" + name + "_" + std::to_string(i)).c_str(), &reg.first, 1, sizeof(void*),
+                        (is_hook_enabled && reg.second.do_override) ? ImGuiInputTextFlags_ReadOnly : 0);
+
+        ImGui::SameLine();
+        ImGui::Text(": ");
+
+        ImGui::SameLine();
+        ImGui::Text("%s", std::format("0x{:0{}X}", reg.second.value, sizeof(void*) * 2).c_str());
+
+        if (reg.second.report.as_uintptr.has_value())
+        {
+            ImGui::SameLine();
+            ImGui::Text(" -> ");
+
+            ImGui::BeginDisabled(!reg.second.do_override);
+
+            ImGui::SameLine();
+            gui::utils::InputHex(reg.second.do_override ? reg.second.override_value : reg.second.value);
+
+            ImGui::EndDisabled();
+
+            ImGui::BeginDisabled(is_hook_enabled && !reg.second.do_override);
+            ImGui::SameLine();
+            ImGui::Checkbox("Override", &reg.second.do_override);
+            ImGui::EndDisabled();
+        }
+
+        draw_analysis(reg.second.report);
+
+        ImGui::PopID();
+        return true;
+    }
+
+    void draw_offsets(const std::string& name, midhook_wrapper::general_purpose_register_definition& reg,
+                      bool is_hook_enabled)
+    {
+        constexpr float INDENT = 32.0f;
+
+        ImGui::PushID(name.c_str());
+        ImGui::Indent(INDENT);
+
+        for (size_t i = 0; i < reg.offset_definitions.size();)
+        {
+            if (draw_offset(name, is_hook_enabled, i, reg.offset_definitions))
+            {
+                ++i;
+            }
+        }
+
+        if (ImGui::Button("+"))
+        {
+            reg.offset_definitions.emplace_back(static_cast<int>(sizeof(void*)),
+                                                midhook_wrapper::offset_register_definition{});
+        }
+
+        ImGui::Unindent(INDENT);
+        ImGui::PopID();
+    }
+
+    void draw_register_and_offsets(const std::string& name, midhook_wrapper::general_purpose_register_definition& reg,
+                                   bool is_hook_enabled)
+    {
+        ImGui::Separator();
+        draw_register(name, reg, is_hook_enabled);
+        draw_offsets(name, reg, is_hook_enabled);
+    }
+
+    void draw_xmm_register(const int reg_num, midhook_wrapper::xmm_register_definition& reg, bool is_hook_enabled)
+    {
+        ImGui::PushID(std::format("XMM{}", reg_num).c_str());
+
+        std::string label = std::format("XMM{}: ", reg_num);
+        ImGui::Text(label.c_str());
+
+        ImGui::BeginDisabled(!reg.do_override);
+
+        ImGui::SameLine();
+        gui::utils::InputHex(reg.do_override ? reg.override_value : reg.value);
+        float xmm_raw_byte_width = ImGui::GetItemRectSize().x;
+
+        ImGui::Indent(ImGui::CalcTextSize(label.c_str()).x);
+        ImGui::Dummy(ImVec2(0.0f, 0.0f));
+
+        for (size_t i = 0; i < 4; i++)
+        {
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(xmm_raw_byte_width / static_cast<float>(4));
+            ImGui::DragFloat(("##f" + std::to_string(i)).c_str(),
+                             &((reg.do_override ? reg.override_value : reg.value).f32[i]), 1.0f, 0.0f, 0.0f, "%.3f");
+        }
+
+        ImGui::Dummy(ImVec2(0.0f, 0.0f));
+        for (size_t i = 0; i < 2; i++)
+        {
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(xmm_raw_byte_width / static_cast<float>(2));
+            ImGui::InputDouble(("##d" + std::to_string(i)).c_str(),
+                               &((reg.do_override ? reg.override_value : reg.value).f64[i]), 1.0, 10.0, "%.6f");
+        }
+        ImGui::Unindent(ImGui::CalcTextSize(label.c_str()).x);
+
+        ImGui::EndDisabled();
+
+        ImGui::BeginDisabled(is_hook_enabled && !reg.do_override);
+        ImGui::SameLine();
+        ImGui::Checkbox("Override", &reg.do_override);
+        ImGui::EndDisabled();
+
+        ImGui::PopID();
+    }
+
+    void draw(midhook_wrapper& hook)
+    {
+        ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+        if (ImGui::Begin(std::format("Live 0x{:X} View", hook.hook.target_address()).c_str(), &hook.show_live_window,
+                         ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            gui::utils::flash_row_background(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                 std::chrono::steady_clock::now() - hook.last_hit_time)
+                                                 .count());
+
+            bool enabled = hook.hook.enabled();
+            if (ImGui::Checkbox("Enabled", &enabled))
+            {
+                enabled ? hook.hook.enable() : hook.hook.disable();
+            }
+
+            ImGui::BeginDisabled(hook.hook.enabled());
+            ImGui::SameLine();
+            if (ImGui::Button("Set Trampoline to next RET"))
+            {
+                if (auto ret_location =
+                        memory_utils::find_next_mnemonic(hook.hook.target_address(), ZYDIS_MNEMONIC_RET))
+                {
+#if SAFETYHOOK_ARCH_X86_32
+                    hook.live_control_context[midhook_wrapper::control_register::EIP].override_value = ret_location;
+                    hook.live_control_context[midhook_wrapper::control_register::EIP].do_override = true;
+#elif SAFETYHOOK_ARCH_X86_64
+                    hook.live_control_context[midhook_wrapper::control_register::RIP].override_value = ret_location;
+                    hook.live_control_context[midhook_wrapper::control_register::RIP].do_override = true;
+#endif
+                }
+                else
+                {
+                    reshade::log::message(reshade::log::level::error, "Could not find next ret instruction");
+                }
+            }
+            ImGui::EndDisabled();
+
+            ImGui::SameLine();
+            ImGui::Text("Hits: %d", hook.hit_count);
+            ImGui::SameLine();
+            ImGui::Text("| Analysis (performed per frame): %d", hook.analysis_count);
+
+#if SAFETYHOOK_ARCH_X86_32
+            draw_register_and_offsets("EAX", hook.live_context[midhook_wrapper::general_purpose_register::EAX],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("ECX", hook.live_context[midhook_wrapper::general_purpose_register::ECX],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("EDX", hook.live_context[midhook_wrapper::general_purpose_register::EDX],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("EBX", hook.live_context[midhook_wrapper::general_purpose_register::EBX],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("ESI", hook.live_context[midhook_wrapper::general_purpose_register::ESI],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("EDI", hook.live_context[midhook_wrapper::general_purpose_register::EDI],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("EBP", hook.live_context[midhook_wrapper::general_purpose_register::EBP],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("ESP", hook.live_context[midhook_wrapper::general_purpose_register::ESP],
+                                      hook.hook.enabled());
+            draw_control_register("EIP", hook.live_control_context[midhook_wrapper::control_register::EIP],
+                                  hook.hook.enabled());
+            draw_control_register("EFLAGS", hook.live_control_context[midhook_wrapper::control_register::EFLAGS],
+                                  hook.hook.enabled());
+#elif SAFETYHOOK_ARCH_X86_64
+            draw_register_and_offsets("RAX", hook.live_context[midhook_wrapper::general_purpose_register::RAX],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("RCX", hook.live_context[midhook_wrapper::general_purpose_register::RCX],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("RDX", hook.live_context[midhook_wrapper::general_purpose_register::RDX],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("RBX", hook.live_context[midhook_wrapper::general_purpose_register::RBX],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("RSI", hook.live_context[midhook_wrapper::general_purpose_register::RSI],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("RDI", hook.live_context[midhook_wrapper::general_purpose_register::RDI],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("RBP", hook.live_context[midhook_wrapper::general_purpose_register::RBP],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("RSP", hook.live_context[midhook_wrapper::general_purpose_register::RSP],
+                                      hook.hook.enabled());
+
+            draw_register_and_offsets("R8", hook.live_context[midhook_wrapper::general_purpose_register::R8],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("R9", hook.live_context[midhook_wrapper::general_purpose_register::R9],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("R10", hook.live_context[midhook_wrapper::general_purpose_register::R10],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("R11", hook.live_context[midhook_wrapper::general_purpose_register::R11],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("R12", hook.live_context[midhook_wrapper::general_purpose_register::R12],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("R13", hook.live_context[midhook_wrapper::general_purpose_register::R13],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("R14", hook.live_context[midhook_wrapper::general_purpose_register::R14],
+                                      hook.hook.enabled());
+            draw_register_and_offsets("R15", hook.live_context[midhook_wrapper::general_purpose_register::R15],
+                                      hook.hook.enabled());
+            draw_control_register("RIP", hook.live_control_context[midhook_wrapper::control_register::RIP],
+                                  hook.hook.enabled());
+            draw_control_register("RFLAGS", hook.live_control_context[midhook_wrapper::control_register::RFLAGS],
+                                  hook.hook.enabled());
+#endif
+            ImGui::Separator();
+            if (ImGui::BeginTable("xmm_registers", 2))
+            {
+                const size_t half_size = hook.live_xmm_context.size() / 2;
+                for (size_t i = 0; i < half_size; ++i)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    draw_xmm_register(i, hook.live_xmm_context[i], hook.hook.enabled());
+                    ImGui::TableSetColumnIndex(1);
+                    draw_xmm_register(i + half_size, hook.live_xmm_context[i + half_size], hook.hook.enabled());
+                }
+
+                ImGui::EndTable();
+            }
+        }
+        ImGui::End();
+    }
+} // namespace gui::midhook::live

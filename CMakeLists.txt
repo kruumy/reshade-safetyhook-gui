@@ -2,16 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 
 project(reshade-safetyhook-gui LANGUAGES CXX)
 
-
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-add_library(reshade INTERFACE)
-target_include_directories(reshade INTERFACE external/reshade/include )
-
-add_library(imgui INTERFACE)
-target_include_directories(imgui INTERFACE external/reshade/deps/imgui)
 
 add_library(${PROJECT_NAME} SHARED
 # @glob("src/**/*.{cpp,c}")
@@ -22,10 +15,28 @@ add_library(${PROJECT_NAME} SHARED
 # @end
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE reshade imgui)
-
 if (CMAKE_SIZEOF_VOID_P EQUAL 4)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".addon32")
 elseif (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".addon64")
 endif()
+
+include(FetchContent)
+
+# Safetyhook
+set(SAFETYHOOK_FETCH_ZYDIS ON)
+FetchContent_Declare(
+    safetyhook
+    GIT_REPOSITORY "https://github.com/cursey/safetyhook.git"
+    GIT_TAG "origin/main"
+)
+FetchContent_MakeAvailable(safetyhook)
+target_link_libraries(${PROJECT_NAME} PRIVATE safetyhook)
+
+add_library(imgui INTERFACE)
+target_include_directories(imgui INTERFACE external/reshade/deps/imgui)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
+
+add_library(reshade INTERFACE)
+target_include_directories(reshade INTERFACE external/reshade/include)
+target_link_libraries(${PROJECT_NAME} PRIVATE reshade)
