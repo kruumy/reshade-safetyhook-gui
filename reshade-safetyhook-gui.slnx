@@ -1,7 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Project Path="reshade-safetyhook-gui.vcxproj" Id="e90deda8-e79d-4147-bc52-17117b4bc9a4" />
-</Solution>
