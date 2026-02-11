@@ -1,8 +1,6 @@
 #pragma once
 #include "allocator.hpp"
 #include "midhook/midhook.hpp"
-#include "midhook_wrapper.hpp"
-#include "utils.hpp"
 #include <imgui.h>
 #include <reshade.hpp>
 
