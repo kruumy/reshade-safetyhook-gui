@@ -48,7 +48,7 @@ namespace gui::midhook
         return true;
     }
 
-    void draw()
+    inline void draw()
     {
         ImGui::PushID("midhook");
 

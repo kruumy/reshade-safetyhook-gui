@@ -32,7 +32,7 @@ namespace gui::allocator
     } // namespace data_type
     static inline std::vector<std::pair<data_type::type, safetyhook::Allocation>> allocations;
 
-    bool draw_allocation_row(data_type::type type, safetyhook::Allocation& allocation, size_t index)
+    inline bool draw_allocation_row(data_type::type type, safetyhook::Allocation& allocation, size_t index)
     {
         ImGui::PushID(&allocation);
 
@@ -90,7 +90,7 @@ namespace gui::allocator
         return true;
     }
 
-    void draw()
+    inline void draw()
     {
         ImGui::PushID("allocator");
 

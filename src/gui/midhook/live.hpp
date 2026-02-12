@@ -8,7 +8,7 @@
 
 namespace gui::midhook::live
 {
-    void draw_analysis(const pointer_analysis::report& report)
+    inline void draw_analysis(const pointer_analysis::report& report)
     {
         if (!report.is_readable_ptr())
         {
@@ -44,12 +44,12 @@ namespace gui::midhook::live
         ImGui::PopID();
     }
 
-    void draw_control_register(const std::string& name, midhook_wrapper::control_register_definition& reg,
-                               bool is_hook_enabled)
+    inline void draw_control_register(const std::string& name, midhook_wrapper::control_register_definition& reg,
+                                      bool is_hook_enabled)
     {
         ImGui::PushID(name.c_str());
 
-        ImGui::Text((name + ": ").c_str());
+        ImGui::Text("%s: ", name.c_str());
 
         ImGui::BeginDisabled(!reg.do_override);
 
@@ -90,7 +90,8 @@ namespace gui::midhook::live
         ImGui::PopID();
     }
 
-    void draw_register(const std::string& name, midhook_wrapper::offset_register_definition& reg, bool is_hook_enabled)
+    inline void draw_register(const std::string& name, midhook_wrapper::offset_register_definition& reg,
+                              bool is_hook_enabled)
     {
         draw_control_register(name, reg, is_hook_enabled);
         ImGui::PushID(name.c_str());
@@ -98,8 +99,9 @@ namespace gui::midhook::live
         ImGui::PopID();
     }
 
-    bool draw_offset(const std::string& name, bool is_hook_enabled, size_t i,
-                     std::vector<std::pair<int, midhook_wrapper::offset_register_definition>>& offset_definitions)
+    inline bool draw_offset(
+        const std::string& name, bool is_hook_enabled, size_t i,
+        std::vector<std::pair<int, midhook_wrapper::offset_register_definition>>& offset_definitions)
     {
         ImGui::PushID(static_cast<int>(i));
         auto& reg = offset_definitions[i];
@@ -112,7 +114,7 @@ namespace gui::midhook::live
         }
 
         ImGui::SameLine();
-        ImGui::Text((name + " +").c_str());
+        ImGui::Text("%s +", name.c_str());
 
         ImGui::SameLine();
         ImGui::SetNextItemWidth(75);
@@ -149,8 +151,8 @@ namespace gui::midhook::live
         return true;
     }
 
-    void draw_offsets(const std::string& name, midhook_wrapper::general_purpose_register_definition& reg,
-                      bool is_hook_enabled)
+    inline void draw_offsets(const std::string& name, midhook_wrapper::general_purpose_register_definition& reg,
+                             bool is_hook_enabled)
     {
         constexpr float INDENT = 32.0f;
 
@@ -175,20 +177,22 @@ namespace gui::midhook::live
         ImGui::PopID();
     }
 
-    void draw_register_and_offsets(const std::string& name, midhook_wrapper::general_purpose_register_definition& reg,
-                                   bool is_hook_enabled)
+    inline void draw_register_and_offsets(const std::string& name,
+                                          midhook_wrapper::general_purpose_register_definition& reg,
+                                          bool is_hook_enabled)
     {
         ImGui::Separator();
         draw_register(name, reg, is_hook_enabled);
         draw_offsets(name, reg, is_hook_enabled);
     }
 
-    void draw_xmm_register(const int reg_num, midhook_wrapper::xmm_register_definition& reg, bool is_hook_enabled)
+    inline void draw_xmm_register(const int reg_num, midhook_wrapper::xmm_register_definition& reg,
+                                  bool is_hook_enabled)
     {
         ImGui::PushID(std::format("XMM{}", reg_num).c_str());
 
         std::string label = std::format("XMM{}: ", reg_num);
-        ImGui::Text(label.c_str());
+        ImGui::Text("%s", label.c_str());
 
         ImGui::BeginDisabled(!reg.do_override);
 
@@ -227,7 +231,7 @@ namespace gui::midhook::live
         ImGui::PopID();
     }
 
-    void draw(midhook_wrapper& hook)
+    inline void draw(midhook_wrapper& hook)
     {
         ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
         if (ImGui::Begin(std::format("Live 0x{:X} View", hook.hook.target_address()).c_str(), &hook.show_live_window,

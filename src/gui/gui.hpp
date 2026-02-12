@@ -6,7 +6,7 @@
 
 namespace gui
 {
-    void draw(reshade::api::effect_runtime* runtime)
+    inline void draw(reshade::api::effect_runtime* runtime)
     {
 
         ImGui::PushID("reshade-safetyhook-gui");
