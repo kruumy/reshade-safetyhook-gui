@@ -9,7 +9,7 @@
 
 namespace gui::utils
 {
-    static inline void flash_row_background(long ms_since_hit, int length_ms = 1000)
+    static inline void flash_row_background(int64_t ms_since_hit, int length_ms = 1000)
     {
         if (ms_since_hit < 1000)
         {
