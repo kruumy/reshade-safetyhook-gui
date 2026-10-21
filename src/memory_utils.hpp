@@ -9,7 +9,7 @@ namespace memory_utils
 {
     static constexpr size_t MAX_STRING_LEN = 64;
     static constexpr uintptr_t LOW_PTR = 0x10000;
-#if defined(_WIN64)
+#ifdef _WIN64
     static constexpr uintptr_t HI_PTR = 0x00007FFFFFFFFFFF;
 #else
     static constexpr uintptr_t HI_PTR = 0x7FFFFFFF;
@@ -59,7 +59,7 @@ namespace memory_utils
         if (!looks_like_pointer(addr))
             return false;
 
-        uint8_t probe;
+        uint8_t probe = 0;
         return safe_read(addr, probe);
     }
 

@@ -5,7 +5,7 @@
 #include <safetyhook.hpp>
 #include <windows.h>
 
-extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
+extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID /*unused*/)
 {
     switch (fdwReason)
     {

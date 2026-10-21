@@ -3,12 +3,13 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <safetyhook.hpp>
 
 class midhook_wrapper
 {
   public:
-    enum general_purpose_register
+    enum general_purpose_register : uint8_t
     {
 #if SAFETYHOOK_ARCH_X86_32
         EAX,
@@ -40,7 +41,7 @@ class midhook_wrapper
         general_purpose_COUNT
     };
 
-    enum xmm_register
+    enum xmm_register : uint8_t
     {
         XMM0,
         XMM1,
@@ -62,7 +63,7 @@ class midhook_wrapper
 #endif
         xmm_COUNT
     };
-    enum control_register
+    enum control_register : uint8_t
     {
 #if SAFETYHOOK_ARCH_X86_32
         EIP,
@@ -74,11 +75,15 @@ class midhook_wrapper
         control_COUNT
     };
 
-    inline static std::vector<std::shared_ptr<midhook_wrapper>> midhooks;
+    static auto& get_midhooks()
+    {
+        static std::vector<std::shared_ptr<midhook_wrapper>> instance;
+        return instance;
+    }
 
     SafetyHookMid hook;
 
-    std::chrono::steady_clock::time_point last_hit_time{};
+    std::chrono::steady_clock::time_point last_hit_time;
     size_t hit_count = 0;
     size_t analysis_count = 0;
 
@@ -124,9 +129,14 @@ class midhook_wrapper
     std::atomic<int> current_frame{0};
     std::atomic<int> last_frame{-1};
     bool has_ran_this_frame();
-    inline static std::unordered_map<uintptr_t, midhook_wrapper*> registry; // trampoline_address, this*
 
-    void handle_offsets(general_purpose_register name, const uintptr_t base_reg, bool do_analysis);
+    static auto& get_registry() // trampoline_address, this*
+    {
+        static std::unordered_map<uintptr_t, midhook_wrapper*> instance;
+        return instance;
+    }
+
+    void handle_offsets(general_purpose_register name, uintptr_t base_reg, bool do_analysis);
 
     void destination(SafetyHookContext& ctx);
     static void trampoline(SafetyHookContext& ctx);

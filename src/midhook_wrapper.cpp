@@ -1,6 +1,7 @@
 ﻿#include "midhook_wrapper.hpp"
 #include "memory_utils.hpp"
 #include "pointer_analysis.hpp"
+#include <algorithm>
 #include <imgui.h>
 #include <reshade.hpp>
 
@@ -12,30 +13,34 @@
 
 midhook_wrapper::midhook_wrapper(SafetyHookMid internal_hook) : hook(std::move(internal_hook))
 {
-    registry[get_trampoline().address()] = this;
+    get_registry()[get_trampoline().address()] = this;
 }
 
 midhook_wrapper::~midhook_wrapper()
 {
     hook.disable();
-    registry.erase(get_trampoline().address());
+    get_registry().erase(get_trampoline().address());
     hook = {};
 }
 
-// Jargon to get the m_hook private member
-template <typename T, auto P> struct Stealer
+namespace
 {
-    friend auto get(T)
+    // Jargon to get the m_hook private member
+    template <typename T, auto P> struct Stealer
     {
-        return P;
-    }
-};
-struct MidHookTag
-{
-    using type = safetyhook::InlineHook safetyhook::MidHook::*;
-};
-template struct Stealer<MidHookTag, &safetyhook::MidHook::m_hook>;
-auto get(MidHookTag);
+        friend auto get(T /*unused*/)
+        {
+            return P;
+        }
+    };
+    struct MidHookTag
+    {
+        using type = safetyhook::InlineHook safetyhook::MidHook::*;
+    };
+    template struct Stealer<MidHookTag, &safetyhook::MidHook::m_hook>;
+    auto get(MidHookTag /*unused*/);
+} // namespace
+
 inline const safetyhook::Allocation& midhook_wrapper::get_trampoline() const
 {
     return (this->hook.*get(MidHookTag{})).trampoline();
@@ -53,7 +58,7 @@ std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
         return nullptr;
     }
 
-    if (std::any_of(midhooks.begin(), midhooks.end(), [target](const auto& hook_ptr) {
+    if (std::ranges::any_of(get_midhooks(), [target](const auto& hook_ptr) {
             return hook_ptr->hook.target_address() == reinterpret_cast<uintptr_t>(target);
         }))
     {
@@ -67,7 +72,7 @@ std::shared_ptr<midhook_wrapper> midhook_wrapper::create(void* target)
         return nullptr;
     }
 
-    return midhooks.emplace_back(std::make_shared<midhook_wrapper>(std::move(*internal_hook)));
+    return get_midhooks().emplace_back(std::make_shared<midhook_wrapper>(std::move(*internal_hook)));
 }
 
 bool midhook_wrapper::has_ran_this_frame()
@@ -320,7 +325,7 @@ void midhook_wrapper::destination(SafetyHookContext& ctx)
 
 void midhook_wrapper::trampoline(SafetyHookContext& ctx)
 {
-    if (auto it = registry.find(ctx.IP_REG); it != registry.end() && it->second)
+    if (auto it = get_registry().find(ctx.IP_REG); it != get_registry().end() && it->second)
     {
         it->second->destination(ctx);
     }

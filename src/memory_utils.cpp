@@ -4,7 +4,7 @@ namespace memory_utils
 {
     bool is_executable_pointer(const void* ptr)
     {
-        uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+        auto addr = reinterpret_cast<uintptr_t>(ptr);
 
         if (!looks_like_pointer(addr))
             return false;
@@ -38,7 +38,7 @@ namespace memory_utils
         while (offset < max_length)
         {
             ZyanStatus status = ZydisDecoderDecodeInstruction(
-                &decoder, NULL, reinterpret_cast<const uint8_t*>(start_addr) + offset, max_length - offset, &ix);
+                &decoder, nullptr, reinterpret_cast<const uint8_t*>(start_addr) + offset, max_length - offset, &ix);
             if (!ZYAN_SUCCESS(status) || ix.length == 0)
             {
                 return 0;

@@ -1,12 +1,13 @@
 #pragma once
 #include "imgui.h"
 #include "live.hpp"
+#include <cstdint>
 
 namespace gui::midhook
 {
     inline bool draw_midhook_row(midhook_wrapper& hook, size_t index)
     {
-        ImGui::PushID(hook.hook.target_address());
+        ImGui::PushID(hook.hook.target());
 
         gui::utils::flash_row_background(
             std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hook.last_hit_time)
@@ -14,12 +15,13 @@ namespace gui::midhook
 
         if (ImGui::Button("X"))
         {
-            midhook_wrapper::midhooks.erase(midhook_wrapper::midhooks.begin() + index);
+            midhook_wrapper::get_midhooks().erase(midhook_wrapper::get_midhooks().begin() + index);
             ImGui::PopID();
             return false;
         }
 
         ImGui::SameLine();
+
         ImGui::Text("0x%p", hook.hook.target());
 
         ImGui::SameLine();
@@ -64,7 +66,7 @@ namespace gui::midhook
         ImGui::SameLine();
         if (ImGui::Button("+"))
         {
-            unsigned long long addr = 0;
+            uintptr_t addr = 0;
             try
             {
                 addr = std::stoull(add_address_buffer, nullptr, 16);
@@ -85,11 +87,11 @@ namespace gui::midhook
             }
         }
 
-        for (size_t i = 0; i < midhook_wrapper::midhooks.size();)
+        for (size_t i = 0; i < midhook_wrapper::get_midhooks().size();)
         {
-            midhook_wrapper::midhooks[i]->on_imgui_render();
+            midhook_wrapper::get_midhooks()[i]->on_imgui_render();
             ImGui::Separator();
-            if (draw_midhook_row(*midhook_wrapper::midhooks[i], i))
+            if (draw_midhook_row(*midhook_wrapper::get_midhooks()[i], i))
             {
                 ++i;
             }

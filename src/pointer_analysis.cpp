@@ -1,11 +1,12 @@
 ﻿#include "pointer_analysis.hpp"
 #include "memory_utils.hpp"
+#include <cmath>
 
 pointer_analysis::report pointer_analysis::analyze_pointer(uintptr_t addr)
 {
     pointer_analysis::report r{};
 
-    uintptr_t target;
+    uintptr_t target = 0;
     if (!memory_utils::safe_read(addr, target))
     {
         return r;
@@ -15,7 +16,7 @@ pointer_analysis::report pointer_analysis::analyze_pointer(uintptr_t addr)
 
     if ((addr & 3) == 0)
     {
-        alignas(4) float f;
+        alignas(4) float f = NAN;
         if (memory_utils::safe_read(addr, f))
         {
             r.as_float.emplace(f);
@@ -24,7 +25,7 @@ pointer_analysis::report pointer_analysis::analyze_pointer(uintptr_t addr)
 
     if ((addr & 7) == 0)
     {
-        alignas(8) double d;
+        alignas(8) double d = NAN;
         if (memory_utils::safe_read(addr, d))
         {
             r.as_double.emplace(d);

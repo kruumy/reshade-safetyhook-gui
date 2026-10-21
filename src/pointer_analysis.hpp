@@ -10,7 +10,7 @@ namespace pointer_analysis
         std::optional<float> as_float;
         std::optional<double> as_double;
         std::string as_string;
-        inline bool is_readable_ptr() const
+        [[nodiscard]] bool is_readable_ptr() const
         {
             return as_uintptr.has_value();
         }

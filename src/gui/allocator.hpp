@@ -1,13 +1,13 @@
 #pragma once
+#include <cstdint>
 #include <imgui.h>
 #include <safetyhook.hpp>
-#include <string_view>
 
 namespace gui::allocator
 {
     namespace data_type
     {
-        enum type
+        enum type : uint8_t
         {
             String,
             Int,
@@ -15,7 +15,7 @@ namespace gui::allocator
             COUNT
         };
 
-        constexpr std::string_view to_string(type _type)
+        constexpr const char* to_string(type _type)
         {
             switch (_type)
             {
@@ -30,20 +30,23 @@ namespace gui::allocator
             }
         }
     } // namespace data_type
-    static inline std::vector<std::pair<data_type::type, safetyhook::Allocation>> allocations;
+    static auto& get_allocations()
+    {
+        static std::vector<std::pair<data_type::type, safetyhook::Allocation>> instance;
+        return instance;
+    }
 
     inline bool draw_allocation_row(data_type::type type, safetyhook::Allocation& allocation, size_t index)
     {
         ImGui::PushID(&allocation);
 
-        std::string_view type_str = data_type::to_string(type);
-        ImGui::TextUnformatted(type_str.data());
+        ImGui::TextUnformatted(data_type::to_string(type));
 
         ImGui::SameLine();
 
         char addr_buf[32];
-        snprintf(addr_buf, sizeof(addr_buf), "0x%llX", (unsigned long long)allocation.address());
-        ImGui::SetNextItemWidth(ImGui::CalcTextSize(addr_buf).x + ImGui::GetStyle().FramePadding.x * 2.0f + 2.0f);
+        snprintf(addr_buf, sizeof(addr_buf), "0x%llX", static_cast<unsigned long long>(allocation.address()));
+        ImGui::SetNextItemWidth(ImGui::CalcTextSize(addr_buf).x + (ImGui::GetStyle().FramePadding.x * 2.0f) + 2.0f);
         ImGui::InputText("##address", addr_buf, sizeof(addr_buf),
                          ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 
@@ -81,7 +84,7 @@ namespace gui::allocator
 
         if (ImGui::Button("Free"))
         {
-            allocations.erase(allocations.begin() + index);
+            get_allocations().erase(get_allocations().begin() + index);
             ImGui::PopID();
             return false;
         }
@@ -96,13 +99,13 @@ namespace gui::allocator
 
         static data_type::type current_type = data_type::type::String;
         ImGui::PushItemWidth(100);
-        if (ImGui::BeginCombo("##type_combo", data_type::to_string(current_type).data()))
+        if (ImGui::BeginCombo("##type_combo", data_type::to_string(current_type)))
         {
             for (int i = 0; i < data_type::COUNT; ++i)
             {
-                data_type::type candidate = static_cast<data_type::type>(i);
+                auto candidate = static_cast<data_type::type>(i);
                 bool is_selected = (candidate == current_type);
-                if (ImGui::Selectable(data_type::to_string(candidate).data(), is_selected))
+                if (ImGui::Selectable(data_type::to_string(candidate), is_selected))
                 {
                     current_type = candidate;
                 }
@@ -165,16 +168,16 @@ namespace gui::allocator
                 if (allocation.has_value())
                 {
                     memcpy(allocation.value().data(), allocation_ptr, allocation_size);
-                    allocations.push_back({current_type, std::move(allocation.value())});
+                    get_allocations().emplace_back(current_type, std::move(allocation.value()));
                     memset(allocation_ptr, 0, allocation_size);
                 }
             }
         }
 
-        for (size_t i = 0; i < allocations.size();)
+        for (size_t i = 0; i < get_allocations().size();)
         {
             ImGui::Separator();
-            if (draw_allocation_row(allocations[i].first, allocations[i].second, i))
+            if (draw_allocation_row(get_allocations()[i].first, get_allocations()[i].second, i))
             {
                 ++i;
             }

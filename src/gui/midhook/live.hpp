@@ -3,6 +3,7 @@
 #include "../../midhook_wrapper.hpp"
 #include "../../pointer_analysis.hpp"
 #include "../utils.hpp"
+#include <cmath>
 #include <imgui.h>
 #include <sstream>
 
@@ -65,7 +66,7 @@ namespace gui::midhook::live
             uintptr_t value = reg.do_override ? reg.override_value : reg.value;
             ImGui::Text("Decimal: %llu", static_cast<unsigned long long>(value));
 
-            float f1;
+            float f1 = NAN;
             std::memcpy(&f1, &value, sizeof(f1));
             ImGui::Text("Float (low): %f", f1);
 
@@ -186,7 +187,7 @@ namespace gui::midhook::live
         draw_offsets(name, reg, is_hook_enabled);
     }
 
-    inline void draw_xmm_register(const int reg_num, midhook_wrapper::xmm_register_definition& reg,
+    inline void draw_xmm_register(const size_t reg_num, midhook_wrapper::xmm_register_definition& reg,
                                   bool is_hook_enabled)
     {
         ImGui::PushID(std::format("XMM{}", reg_num).c_str());
@@ -208,7 +209,7 @@ namespace gui::midhook::live
             ImGui::SameLine();
             ImGui::SetNextItemWidth(xmm_raw_byte_width / static_cast<float>(4));
             ImGui::DragFloat(("##f" + std::to_string(i)).c_str(),
-                             &((reg.do_override ? reg.override_value : reg.value).f32[i]), 1.0f, 0.0f, 0.0f, "%.3f");
+                             &(reg.do_override ? reg.override_value : reg.value).f32[i], 1.0f, 0.0f, 0.0f, "%.3f");
         }
 
         ImGui::Dummy(ImVec2(0.0f, 0.0f));
@@ -217,7 +218,7 @@ namespace gui::midhook::live
             ImGui::SameLine();
             ImGui::SetNextItemWidth(xmm_raw_byte_width / static_cast<float>(2));
             ImGui::InputDouble(("##d" + std::to_string(i)).c_str(),
-                               &((reg.do_override ? reg.override_value : reg.value).f64[i]), 1.0, 10.0, "%.6f");
+                               &(reg.do_override ? reg.override_value : reg.value).f64[i], 1.0, 10.0, "%.6f");
         }
         ImGui::Unindent(ImGui::CalcTextSize(label.c_str()).x);
 
