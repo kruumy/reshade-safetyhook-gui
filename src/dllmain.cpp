@@ -1,9 +1,9 @@
+#include <windows.h>
 #include "gui/gui.hpp"
 #include <Zydis/Zydis.h>
 #include <imgui.h>
 #include <reshade.hpp>
 #include <safetyhook.hpp>
-#include <windows.h>
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID /*unused*/)
 {

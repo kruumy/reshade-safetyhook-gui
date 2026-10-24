@@ -1,9 +1,9 @@
 ﻿#pragma once
+#include <windows.h>
 #include <Zydis/Zydis.h>
 #include <cstdint>
 #include <cstring>
 #include <string>
-#include <windows.h>
 
 namespace memory_utils
 {
@@ -18,14 +18,18 @@ namespace memory_utils
     static inline bool looks_like_pointer(uintptr_t v)
     {
         if (!v)
+        {
             return false;
+        }
         return v >= LOW_PTR && v <= HI_PTR;
     }
 
     template <typename T> static inline bool safe_read(uintptr_t addr, T& out)
     {
         if (!looks_like_pointer(addr))
+        {
             return false;
+        }
 
         __try
         {
@@ -41,7 +45,9 @@ namespace memory_utils
     template <typename T> static inline bool safe_write(uintptr_t addr, const T& value)
     {
         if (!looks_like_pointer(addr))
+        {
             return false;
+        }
 
         __try
         {
@@ -57,7 +63,9 @@ namespace memory_utils
     static inline bool is_readable_pointer(uintptr_t addr)
     {
         if (!looks_like_pointer(addr))
+        {
             return false;
+        }
 
         uint8_t probe = 0;
         return safe_read(addr, probe);

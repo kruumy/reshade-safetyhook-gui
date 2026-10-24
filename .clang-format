@@ -1,3 +1,10 @@
 BasedOnStyle: Microsoft
 NamespaceIndentation: All
 PointerAlignment: Left
+InsertBraces: true
+SortIncludes:
+  Enabled: true
+IncludeBlocks: Preserve
+IncludeCategories:
+  - Regex: '^<windows\.h>$'
+    Priority: 0
